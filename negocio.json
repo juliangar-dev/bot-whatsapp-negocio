@@ -1,0 +1,25 @@
+{
+    "nombre": "Pizzeria Pepito",
+    "ubicacion": "Belgrano",
+    "horario": "Lunes a viernes de 8 a 20 y fines de semana de 9 a 00",
+    "servicios": [
+        {
+            "nombre": "Pizza a la piedra: $5000",
+            "precio": null
+        },
+        {
+            "nombre": "pizza muzzarella: $8600",
+            "precio": null
+        },
+        {
+            "nombre": "Napolitana $9000",
+            "precio": null
+        },
+        {
+            "nombre": "Calabresa: 11000",
+            "precio": null
+        }
+    ],
+    "turnos": "No es necesario, se atiende por orden de llegada",
+    "contacto": "Pepito"
+}
