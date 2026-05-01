@@ -28,6 +28,7 @@ class Negocio(db.Model):
     contacto = db.Column(db.String(100))
 
 with app.app_context():
+    db.drop_all()
     db.create_all()
 
 def construir_contexto(negocio):
