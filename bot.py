@@ -182,7 +182,7 @@ def webhook(negocio_id):
 
     respuesta = client.messages.create(
         model="claude-sonnet-4-6",
-        max_tokens=300,
+        max_tokens=150,
         system=construir_contexto(negocio),
         messages=historiales[clave]
     )
