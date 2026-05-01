@@ -7,7 +7,6 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; color: #333; }
-        
         header {
             background: linear-gradient(135deg, #25D366, #128C7E);
             color: white;
@@ -18,14 +17,9 @@
         }
         header h1 { font-size: 28px; letter-spacing: 1px; }
         header p { font-size: 14px; opacity: 0.9; }
-
-        .hero {
-            text-align: center;
-            padding: 60px 20px 40px;
-        }
+        .hero { text-align: center; padding: 60px 20px 40px; }
         .hero h2 { font-size: 32px; color: #128C7E; margin-bottom: 10px; }
         .hero p { font-size: 18px; color: #555; max-width: 500px; margin: 0 auto; }
-
         .form-container {
             background: white;
             max-width: 580px;
@@ -34,18 +28,8 @@
             border-radius: 16px;
             box-shadow: 0 4px 24px rgba(0,0,0,0.08);
         }
-        .form-container h3 {
-            font-size: 20px;
-            margin-bottom: 24px;
-            color: #128C7E;
-        }
-        label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 6px;
-            color: #444;
-            font-size: 14px;
-        }
+        .form-container h3 { font-size: 20px; margin-bottom: 24px; color: #128C7E; }
+        label { display: block; font-weight: 600; margin-bottom: 6px; color: #444; font-size: 14px; }
         input, textarea {
             width: 100%;
             padding: 12px;
@@ -56,10 +40,7 @@
             font-family: inherit;
             transition: border 0.2s;
         }
-        input:focus, textarea:focus {
-            outline: none;
-            border-color: #25D366;
-        }
+        input:focus, textarea:focus { outline: none; border-color: #25D366; }
         button {
             width: 100%;
             background: linear-gradient(135deg, #25D366, #128C7E);
@@ -70,32 +51,24 @@
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: opacity 0.2s;
         }
         button:hover { opacity: 0.9; }
-
-        .success {
+        .resultado {
             display: none;
             background: #e8f5e9;
             border: 1px solid #25D366;
             color: #1a7a3a;
-            padding: 16px;
-            border-radius: 8px;
-            margin-top: 16px;
-            text-align: center;
-            font-weight: 600;
-        }
-
-        footer {
-            text-align: center;
             padding: 20px;
-            color: #aaa;
-            font-size: 13px;
+            border-radius: 8px;
+            margin-top: 20px;
         }
+        .resultado h4 { margin-bottom: 12px; font-size: 16px; }
+        .resultado p { font-size: 14px; margin-bottom: 8px; }
+        .resultado strong { color: #128C7E; }
+        footer { text-align: center; padding: 20px; color: #aaa; font-size: 13px; }
     </style>
 </head>
 <body>
-
     <header>
         <div>
             <h1>🤖 RespondIA</h1>
@@ -104,66 +77,96 @@
     </header>
 
     <div class="hero">
-        <h2>Configurá tu bot de WhatsApp</h2>
+        <h2>Activá tu bot de WhatsApp</h2>
         <p>Completá los datos de tu negocio y tu bot empieza a responder al instante.</p>
     </div>
 
     <div class="form-container">
         <h3>📋 Datos del negocio</h3>
 
-        <label>Nombre del negocio</label>
+        <label>Nombre del negocio *</label>
         <input type="text" id="nombre" placeholder="Ej: Peluquería Carlos">
 
-        <label>Ubicación</label>
-        <input type="text" id="ubicacion" placeholder="Ej: Buenos Aires">
+        <label>Contraseña para tu panel *</label>
+        <input type="password" id="password" placeholder="Elegí una contraseña segura">
+
+        <label>Dirección / Ubicación</label>
+        <input type="text" id="ubicacion" placeholder="Ej: Av. Corrientes 1234, Buenos Aires">
+
+        <label>Teléfono de contacto</label>
+        <input type="text" id="telefono" placeholder="Ej: 011-4444-5555">
+
+        <label>WhatsApp</label>
+        <input type="text" id="whatsapp" placeholder="Ej: +5491112345678">
+
+        <label>Sitio web</label>
+        <input type="text" id="sitio_web" placeholder="Ej: www.mipagina.com.ar">
 
         <label>Horario de atención</label>
         <input type="text" id="horario" placeholder="Ej: Lunes a sábado de 9 a 20hs">
 
         <label>Servicios y precios (uno por línea, formato: Servicio - $precio)</label>
-        <textarea id="servicios" rows="5" placeholder="Corte de pelo - $3000&#10;Corte y barba - $4500&#10;Afeitado - $2000"></textarea>
+        <textarea id="servicios" rows="5" placeholder="Corte de pelo - $3000&#10;Corte y barba - $4500"></textarea>
 
-        <label>Nombre del dueño o contacto</label>
+        <label>Nombre del dueño o responsable *</label>
         <input type="text" id="contacto" placeholder="Ej: Carlos">
 
-        <button onclick="guardar()">✅ Activar mi bot de WhatsApp</button>
-        <div class="success" id="success">¡Tu bot está activo! Ya puede responder mensajes.</div>
+        <label>Información adicional</label>
+        <textarea id="info_adicional" rows="3" placeholder="Ej: Aceptamos tarjeta y efectivo..."></textarea>
+
+        <button onclick="crear()">✅ Activar mi bot de WhatsApp</button>
+
+        <div class="resultado" id="resultado">
+            <h4>🎉 ¡Tu bot está activo!</h4>
+            <p>Guardá esta información — la vas a necesitar para acceder a tu panel:</p>
+            <p>🔗 <strong>Link de tu panel:</strong> <span id="panel-link"></span></p>
+            <p>🤖 <strong>ID de tu bot:</strong> <span id="bot-id"></span></p>
+            <p style="margin-top:12px; font-size:13px; color:#555;">Guardá el link y tu contraseña en un lugar seguro.</p>
+        </div>
     </div>
 
     <footer>© 2026 RespondIA · Todos los derechos reservados</footer>
 
     <script>
-        function guardar() {
+        async function crear() {
             const nombre = document.getElementById("nombre").value;
-            const ubicacion = document.getElementById("ubicacion").value;
-            const horario = document.getElementById("horario").value;
-            const serviciosRaw = document.getElementById("servicios").value;
+            const password = document.getElementById("password").value;
             const contacto = document.getElementById("contacto").value;
 
-            if (!nombre || !ubicacion || !horario || !serviciosRaw || !contacto) {
-                alert("Por favor completá todos los campos.");
+            if (!nombre || !password || !contacto) {
+                alert("El nombre, contraseña y responsable son obligatorios.");
                 return;
             }
 
+            const serviciosRaw = document.getElementById("servicios").value;
             const servicios = serviciosRaw.split("\n").filter(l => l.trim()).map(linea => {
                 const partes = linea.split(" - $");
-                return { nombre: partes[0], precio: partes[1] ? parseInt(partes[1]) : null };
+                return { nombre: partes[0].trim(), precio: partes[1] ? parseInt(partes[1]) : null };
             });
 
-            const datos = { nombre, ubicacion, horario, servicios, turnos: "No es necesario, se atiende por orden de llegada", contacto };
+            const datos = {
+                nombre, password, contacto,
+                ubicacion: document.getElementById("ubicacion").value,
+                telefono: document.getElementById("telefono").value,
+                whatsapp: document.getElementById("whatsapp").value,
+                sitio_web: document.getElementById("sitio_web").value,
+                horario: document.getElementById("horario").value,
+                servicios,
+                info_adicional: document.getElementById("info_adicional").value
+            };
 
-            fetch("/guardar", {
+            const res = await fetch("/crear", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(datos)
-            })
-            .then(res => res.json())
-            .then(data => {
-                document.getElementById("success").style.display = "block";
-            })
-            .catch(err => alert("Error al guardar"));
+            });
+            const result = await res.json();
+
+            const base = window.location.origin;
+            document.getElementById("panel-link").textContent = `${base}/panel/${result.id}`;
+            document.getElementById("bot-id").textContent = result.id;
+            document.getElementById("resultado").style.display = "block";
         }
     </script>
-
 </body>
 </html>

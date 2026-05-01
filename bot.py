@@ -1,9 +1,10 @@
-from flask import Flask, request, jsonify, send_file, render_template_string
+from flask import Flask, request, jsonify, send_file, abort
 from flask_sqlalchemy import SQLAlchemy
 from twilio.twiml.messaging_response import MessagingResponse
 import anthropic
 import json
 import os
+import uuid
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -17,6 +18,7 @@ client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
 class Negocio(db.Model):
     id = db.Column(db.String(100), primary_key=True)
+    password = db.Column(db.String(100))
     nombre = db.Column(db.String(200))
     ubicacion = db.Column(db.String(200))
     telefono = db.Column(db.String(50))
@@ -28,7 +30,6 @@ class Negocio(db.Model):
     contacto = db.Column(db.String(100))
 
 with app.app_context():
-    db.drop_all()
     db.create_all()
 
 def construir_contexto(negocio):
@@ -70,9 +71,12 @@ def panel(negocio_id):
 
 @app.route("/negocio/<negocio_id>", methods=["GET"])
 def obtener_negocio(negocio_id):
+    password = request.args.get("password")
     negocio = Negocio.query.get(negocio_id)
     if not negocio:
         return jsonify({"error": "No encontrado"}), 404
+    if negocio.password and negocio.password != password:
+        return jsonify({"error": "Contraseña incorrecta"}), 403
     return jsonify({
         "nombre": negocio.nombre,
         "ubicacion": negocio.ubicacion,
@@ -85,14 +89,46 @@ def obtener_negocio(negocio_id):
         "contacto": negocio.contacto
     })
 
+@app.route("/crear", methods=["POST"])
+def crear():
+    datos = request.get_json()
+    negocio_id = str(uuid.uuid4())[:8]
+    password = datos.get("password")
+    
+    negocio = Negocio(
+        id=negocio_id,
+        password=password,
+        nombre=datos["nombre"],
+        ubicacion=datos.get("ubicacion", ""),
+        telefono=datos.get("telefono", ""),
+        whatsapp=datos.get("whatsapp", ""),
+        sitio_web=datos.get("sitio_web", ""),
+        horario=datos.get("horario", ""),
+        servicios=json.dumps(datos.get("servicios", []), ensure_ascii=False),
+        info_adicional=datos.get("info_adicional", ""),
+        contacto=datos.get("contacto", "")
+    )
+    db.session.add(negocio)
+    db.session.commit()
+    
+    return jsonify({
+        "mensaje": f"✅ Bot creado para {datos['nombre']}",
+        "id": negocio_id,
+        "panel": f"/panel/{negocio_id}",
+        "webhook": f"/webhook/{negocio_id}"
+    })
+
 @app.route("/guardar", methods=["POST"])
 def guardar():
     datos = request.get_json()
-    negocio_id = datos["nombre"].lower().replace(" ", "_")
+    negocio_id = datos.get("id")
+    password = datos.get("password")
     
     negocio = Negocio.query.get(negocio_id)
     if not negocio:
-        negocio = Negocio(id=negocio_id)
+        return jsonify({"error": "No encontrado"}), 404
+    if negocio.password and negocio.password != password:
+        return jsonify({"error": "Contraseña incorrecta"}), 403
     
     negocio.nombre = datos["nombre"]
     negocio.ubicacion = datos.get("ubicacion", "")
@@ -107,7 +143,7 @@ def guardar():
     db.session.add(negocio)
     db.session.commit()
     
-    return jsonify({"mensaje": f"✅ Bot actualizado para {datos['nombre']}", "id": negocio_id})
+    return jsonify({"mensaje": f"✅ Bot actualizado para {datos['nombre']}"})
 
 @app.route("/webhook/<negocio_id>", methods=["POST"])
 def webhook(negocio_id):
