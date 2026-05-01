@@ -90,7 +90,7 @@ def panel(negocio_id):
 @app.route("/negocio/<negocio_id>", methods=["GET"])
 def obtener_negocio(negocio_id):
     password = request.args.get("password")
-    negocio = Negocio.query.get(negocio_id)
+    negocio = db.session.get(Negocio, negocio_id)
     if not negocio:
         return jsonify({"error": "No encontrado"}), 404
     if negocio.password and negocio.password != password:
@@ -142,7 +142,7 @@ def guardar():
     negocio_id = datos.get("id")
     password = datos.get("password")
     
-    negocio = Negocio.query.get(negocio_id)
+    negocio = db.session.get(Negocio, negocio_id)
     if not negocio:
         return jsonify({"error": "No encontrado"}), 404
     if negocio.password and negocio.password != password:
@@ -168,7 +168,7 @@ def webhook(negocio_id):
     numero = request.form.get("From")
     mensaje = request.form.get("Body")
 
-    negocio = Negocio.query.get(negocio_id)
+    negocio = db.session.get(Negocio, negocio_id)
     if not negocio:
         resp = MessagingResponse()
         resp.message("Lo siento, este servicio no está configurado.")
