@@ -3,63 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Configurá tu bot de WhatsApp</title>
+    <title>RespondIA - Tu negocio responde solo</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 40px auto;
-            padding: 20px;
-            background-color: #f5f5f5;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; color: #333; }
+        
+        header {
+            background: linear-gradient(135deg, #25D366, #128C7E);
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        h1 {
-            color: #25D366;
+        header h1 { font-size: 28px; letter-spacing: 1px; }
+        header p { font-size: 14px; opacity: 0.9; }
+
+        .hero {
+            text-align: center;
+            padding: 60px 20px 40px;
+        }
+        .hero h2 { font-size: 32px; color: #128C7E; margin-bottom: 10px; }
+        .hero p { font-size: 18px; color: #555; max-width: 500px; margin: 0 auto; }
+
+        .form-container {
+            background: white;
+            max-width: 580px;
+            margin: 0 auto 60px;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+        }
+        .form-container h3 {
+            font-size: 20px;
+            margin-bottom: 24px;
+            color: #128C7E;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #444;
+            font-size: 14px;
         }
         input, textarea {
             width: 100%;
-            padding: 10px;
-            margin: 8px 0 16px 0;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            box-sizing: border-box;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 15px;
+            font-family: inherit;
+            transition: border 0.2s;
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #25D366;
         }
         button {
-            background-color: #25D366;
+            width: 100%;
+            background: linear-gradient(135deg, #25D366, #128C7E);
             color: white;
-            padding: 12px 24px;
+            padding: 14px;
             border: none;
-            border-radius: 6px;
-            cursor: pointer;
+            border-radius: 8px;
             font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
         }
-        button:hover {
-            background-color: #1da851;
+        button:hover { opacity: 0.9; }
+
+        .success {
+            display: none;
+            background: #e8f5e9;
+            border: 1px solid #25D366;
+            color: #1a7a3a;
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 16px;
+            text-align: center;
+            font-weight: 600;
         }
-        label {
-            font-weight: bold;
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #aaa;
+            font-size: 13px;
         }
     </style>
 </head>
 <body>
-    <h1>⚙️ Configurá tu bot de WhatsApp</h1>
 
-    <label>Nombre del negocio</label>
-    <input type="text" id="nombre" placeholder="Ej: Peluquería Carlos">
+    <header>
+        <div>
+            <h1>🤖 RespondIA</h1>
+            <p>Tu negocio responde solo, las 24hs</p>
+        </div>
+    </header>
 
-    <label>Ubicación</label>
-    <input type="text" id="ubicacion" placeholder="Ej: Buenos Aires">
+    <div class="hero">
+        <h2>Configurá tu bot de WhatsApp</h2>
+        <p>Completá los datos de tu negocio y tu bot empieza a responder al instante.</p>
+    </div>
 
-    <label>Horario</label>
-    <input type="text" id="horario" placeholder="Ej: Lunes a sábado de 9 a 20hs">
+    <div class="form-container">
+        <h3>📋 Datos del negocio</h3>
 
-    <label>Servicios y precios (uno por línea, formato: Servicio - $precio)</label>
-    <textarea id="servicios" rows="5" placeholder="Corte de pelo - $3000&#10;Corte y barba - $4500&#10;Afeitado - $2000"></textarea>
+        <label>Nombre del negocio</label>
+        <input type="text" id="nombre" placeholder="Ej: Peluquería Carlos">
 
-    <label>Nombre del dueño o contacto</label>
-    <input type="text" id="contacto" placeholder="Ej: Carlos">
+        <label>Ubicación</label>
+        <input type="text" id="ubicacion" placeholder="Ej: Buenos Aires">
 
-    <br>
-    <button onclick="guardar()">Guardar configuración</button>
+        <label>Horario de atención</label>
+        <input type="text" id="horario" placeholder="Ej: Lunes a sábado de 9 a 20hs">
+
+        <label>Servicios y precios (uno por línea, formato: Servicio - $precio)</label>
+        <textarea id="servicios" rows="5" placeholder="Corte de pelo - $3000&#10;Corte y barba - $4500&#10;Afeitado - $2000"></textarea>
+
+        <label>Nombre del dueño o contacto</label>
+        <input type="text" id="contacto" placeholder="Ej: Carlos">
+
+        <button onclick="guardar()">✅ Activar mi bot de WhatsApp</button>
+        <div class="success" id="success">¡Tu bot está activo! Ya puede responder mensajes.</div>
+    </div>
+
+    <footer>© 2026 RespondIA · Todos los derechos reservados</footer>
 
     <script>
         function guardar() {
@@ -69,9 +140,14 @@
             const serviciosRaw = document.getElementById("servicios").value;
             const contacto = document.getElementById("contacto").value;
 
-            const servicios = serviciosRaw.split("\n").map(linea => {
+            if (!nombre || !ubicacion || !horario || !serviciosRaw || !contacto) {
+                alert("Por favor completá todos los campos.");
+                return;
+            }
+
+            const servicios = serviciosRaw.split("\n").filter(l => l.trim()).map(linea => {
                 const partes = linea.split(" - $");
-                return { nombre: partes[0], precio: parseInt(partes[1]) };
+                return { nombre: partes[0], precio: partes[1] ? parseInt(partes[1]) : null };
             });
 
             const datos = { nombre, ubicacion, horario, servicios, turnos: "No es necesario, se atiende por orden de llegada", contacto };
@@ -82,9 +158,12 @@
                 body: JSON.stringify(datos)
             })
             .then(res => res.json())
-            .then(data => alert(data.mensaje))
+            .then(data => {
+                document.getElementById("success").style.display = "block";
+            })
             .catch(err => alert("Error al guardar"));
         }
     </script>
+
 </body>
 </html>
