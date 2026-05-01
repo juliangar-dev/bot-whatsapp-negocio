@@ -10,12 +10,13 @@ load_dotenv()
 app = Flask(__name__)
 client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
-def cargar_negocio():
-    with open("negocio.json", "r", encoding="utf-8") as f:
+def cargar_negocio(negocio_id):
+    ruta = f"negocios/{negocio_id}.json"
+    if not os.path.exists(ruta):
+        return None
+    with open(ruta, "r", encoding="utf-8") as f:
         datos = json.load(f)
-    
     servicios = "\n".join([f"- {s['nombre']}: ${s['precio']}" for s in datos["servicios"]])
-    
     return f"""
 Sos el asistente virtual de '{datos["nombre"]}', ubicada en {datos["ubicacion"]}.
 Horario: {datos["horario"]}.
@@ -35,29 +36,38 @@ def index():
 @app.route("/guardar", methods=["POST"])
 def guardar():
     datos = request.get_json()
-    with open("negocio.json", "w", encoding="utf-8") as f:
+    negocio_id = datos["nombre"].lower().replace(" ", "_")
+    ruta = f"negocios/{negocio_id}.json"
+    with open(ruta, "w", encoding="utf-8") as f:
         json.dump(datos, f, ensure_ascii=False, indent=4)
-    return jsonify({"mensaje": "✅ Configuración guardada correctamente"})
+    return jsonify({"mensaje": f"✅ Configuración guardada para {datos['nombre']}", "id": negocio_id})
 
-@app.route("/webhook", methods=["POST"])
-def webhook():
+@app.route("/webhook/<negocio_id>", methods=["POST"])
+def webhook(negocio_id):
     numero = request.form.get("From")
     mensaje = request.form.get("Body")
 
-    if numero not in historiales:
-        historiales[numero] = []
+    contexto = cargar_negocio(negocio_id)
+    if not contexto:
+        resp = MessagingResponse()
+        resp.message("Lo siento, este servicio no está configurado.")
+        return str(resp)
 
-    historiales[numero].append({"role": "user", "content": mensaje})
+    clave = f"{negocio_id}_{numero}"
+    if clave not in historiales:
+        historiales[clave] = []
+
+    historiales[clave].append({"role": "user", "content": mensaje})
 
     respuesta = client.messages.create(
         model="claude-sonnet-4-6",
         max_tokens=300,
-        system=cargar_negocio(),
-        messages=historiales[numero]
+        system=contexto,
+        messages=historiales[clave]
     )
 
     texto = respuesta.content[0].text
-    historiales[numero].append({"role": "assistant", "content": texto})
+    historiales[clave].append({"role": "assistant", "content": texto})
 
     resp = MessagingResponse()
     resp.message(texto)
