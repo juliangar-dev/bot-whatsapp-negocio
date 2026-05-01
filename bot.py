@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify, send_file, render_template_string
 from flask_sqlalchemy import SQLAlchemy
 from twilio.twiml.messaging_response import MessagingResponse
 import anthropic
@@ -19,32 +19,70 @@ class Negocio(db.Model):
     id = db.Column(db.String(100), primary_key=True)
     nombre = db.Column(db.String(200))
     ubicacion = db.Column(db.String(200))
-    horario = db.Column(db.String(200))
+    telefono = db.Column(db.String(50))
+    whatsapp = db.Column(db.String(50))
+    sitio_web = db.Column(db.String(200))
+    horario = db.Column(db.String(300))
     servicios = db.Column(db.Text)
-    turnos = db.Column(db.String(200))
+    info_adicional = db.Column(db.Text)
     contacto = db.Column(db.String(100))
 
 with app.app_context():
     db.create_all()
 
 def construir_contexto(negocio):
-    servicios = json.loads(negocio.servicios)
-    lista = "\n".join([f"- {s['nombre']}: ${s['precio']}" for s in servicios])
-    return f"""
-Sos el asistente virtual de '{negocio.nombre}', ubicada en {negocio.ubicacion}.
-Horario: {negocio.horario}.
-Servicios y precios:
-{lista}
-Turnos: {negocio.turnos}.
-Respondé siempre de forma amable, breve y en español rioplatense.
-Si te preguntan algo que no sabés, decí que consulten directamente con {negocio.contacto}.
+    servicios = json.loads(negocio.servicios) if negocio.servicios else []
+    lista = "\n".join([f"- {s['nombre']}: ${s['precio']}" for s in servicios if s.get('nombre')])
+    
+    contexto = f"""
+Sos el asistente virtual de '{negocio.nombre}'.
+Ubicación: {negocio.ubicacion or 'No disponible'}.
+Horario: {negocio.horario or 'No disponible'}.
 """
+    if negocio.telefono:
+        contexto += f"Teléfono: {negocio.telefono}.\n"
+    if negocio.whatsapp:
+        contexto += f"WhatsApp: {negocio.whatsapp}.\n"
+    if negocio.sitio_web:
+        contexto += f"Sitio web: {negocio.sitio_web}.\n"
+    if lista:
+        contexto += f"Servicios y precios:\n{lista}\n"
+    if negocio.info_adicional:
+        contexto += f"Información adicional: {negocio.info_adicional}\n"
+    
+    contexto += f"""
+Respondé siempre de forma amable, breve y en español rioplatense.
+Si te preguntan algo que no sabés, derivá al contacto: {negocio.contacto or negocio.nombre}.
+Si preguntan cómo comunicarse con alguien real, dales el teléfono o WhatsApp disponible.
+"""
+    return contexto
 
 historiales = {}
 
 @app.route("/")
 def index():
     return send_file("index.html")
+
+@app.route("/panel/<negocio_id>")
+def panel(negocio_id):
+    return send_file("panel.html")
+
+@app.route("/negocio/<negocio_id>", methods=["GET"])
+def obtener_negocio(negocio_id):
+    negocio = Negocio.query.get(negocio_id)
+    if not negocio:
+        return jsonify({"error": "No encontrado"}), 404
+    return jsonify({
+        "nombre": negocio.nombre,
+        "ubicacion": negocio.ubicacion,
+        "telefono": negocio.telefono,
+        "whatsapp": negocio.whatsapp,
+        "sitio_web": negocio.sitio_web,
+        "horario": negocio.horario,
+        "servicios": negocio.servicios,
+        "info_adicional": negocio.info_adicional,
+        "contacto": negocio.contacto
+    })
 
 @app.route("/guardar", methods=["POST"])
 def guardar():
@@ -56,16 +94,19 @@ def guardar():
         negocio = Negocio(id=negocio_id)
     
     negocio.nombre = datos["nombre"]
-    negocio.ubicacion = datos["ubicacion"]
-    negocio.horario = datos["horario"]
-    negocio.servicios = json.dumps(datos["servicios"], ensure_ascii=False)
-    negocio.turnos = datos.get("turnos", "No es necesario, se atiende por orden de llegada")
-    negocio.contacto = datos["contacto"]
+    negocio.ubicacion = datos.get("ubicacion", "")
+    negocio.telefono = datos.get("telefono", "")
+    negocio.whatsapp = datos.get("whatsapp", "")
+    negocio.sitio_web = datos.get("sitio_web", "")
+    negocio.horario = datos.get("horario", "")
+    negocio.servicios = json.dumps(datos.get("servicios", []), ensure_ascii=False)
+    negocio.info_adicional = datos.get("info_adicional", "")
+    negocio.contacto = datos.get("contacto", "")
     
     db.session.add(negocio)
     db.session.commit()
     
-    return jsonify({"mensaje": f"✅ Bot activado para {datos['nombre']}", "id": negocio_id})
+    return jsonify({"mensaje": f"✅ Bot actualizado para {datos['nombre']}", "id": negocio_id})
 
 @app.route("/webhook/<negocio_id>", methods=["POST"])
 def webhook(negocio_id):

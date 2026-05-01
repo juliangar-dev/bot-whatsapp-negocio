@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RespondIA - Panel de tu negocio</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; color: #333; }
+        header {
+            background: linear-gradient(135deg, #25D366, #128C7E);
+            color: white;
+            padding: 20px 40px;
+        }
+        header h1 { font-size: 24px; }
+        header p { font-size: 13px; opacity: 0.9; margin-top: 4px; }
+        .container {
+            max-width: 600px;
+            margin: 40px auto 60px;
+            padding: 0 20px;
+        }
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 36px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            margin-bottom: 24px;
+        }
+        .card h2 {
+            font-size: 18px;
+            color: #128C7E;
+            margin-bottom: 24px;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            font-size: 13px;
+            color: #555;
+            margin-bottom: 6px;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            margin-bottom: 18px;
+            transition: border 0.2s;
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #25D366;
+        }
+        .hint {
+            font-size: 12px;
+            color: #999;
+            margin-top: -14px;
+            margin-bottom: 18px;
+        }
+        button {
+            width: 100%;
+            background: linear-gradient(135deg, #25D366, #128C7E);
+            color: white;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        button:hover { opacity: 0.9; }
+        .success {
+            display: none;
+            background: #e8f5e9;
+            border: 1px solid #25D366;
+            color: #1a7a3a;
+            padding: 14px;
+            border-radius: 8px;
+            margin-top: 16px;
+            text-align: center;
+            font-weight: 600;
+        }
+        footer {
+            text-align: center;
+            color: #bbb;
+            font-size: 12px;
+            padding-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>🤖 RespondIA</h1>
+    <p>Panel de configuración de tu negocio</p>
+</header>
+
+<div class="container">
+    <div class="card">
+        <h2>📋 Información del negocio</h2>
+
+        <label>Nombre del negocio *</label>
+        <input type="text" id="nombre" placeholder="Ej: Peluquería Carlos">
+
+        <label>Dirección / Ubicación</label>
+        <input type="text" id="ubicacion" placeholder="Ej: Av. Corrientes 1234, Buenos Aires">
+
+        <label>Teléfono de contacto</label>
+        <input type="text" id="telefono" placeholder="Ej: 011-4444-5555">
+
+        <label>WhatsApp (para derivar consultas)</label>
+        <input type="text" id="whatsapp" placeholder="Ej: +5491112345678">
+
+        <label>Sitio web</label>
+        <input type="text" id="sitio_web" placeholder="Ej: www.mipagina.com.ar">
+
+        <label>Horario de atención</label>
+        <input type="text" id="horario" placeholder="Ej: Lunes a viernes 9 a 18hs, sábados 9 a 13hs">
+
+        <label>Nombre del dueño o responsable *</label>
+        <input type="text" id="contacto" placeholder="Ej: Carlos">
+    </div>
+
+    <div class="card">
+        <h2>💰 Servicios y precios</h2>
+        <label>Uno por línea, formato: Servicio - $precio</label>
+        <textarea id="servicios" rows="6" placeholder="Corte de pelo - $3000&#10;Corte y barba - $4500&#10;Afeitado - $2000"></textarea>
+        <p class="hint">Si no tenés precios fijos, escribí solo el nombre del servicio</p>
+    </div>
+
+    <div class="card">
+        <h2>📝 Información adicional</h2>
+        <label>Todo lo que quieras que el bot sepa sobre tu negocio</label>
+        <textarea id="info_adicional" rows="5" placeholder="Ej: Aceptamos tarjeta y efectivo. Tenemos estacionamiento. Hablamos inglés. Hacemos envíos a todo el país..."></textarea>
+    </div>
+
+    <button onclick="guardar()">💾 Guardar cambios</button>
+    <div class="success" id="success">✅ ¡Cambios guardados! Tu bot ya tiene la información actualizada.</div>
+</div>
+
+<footer>© 2026 RespondIA</footer>
+
+<script>
+    const negocioId = window.location.pathname.split("/").pop();
+
+    async function cargarDatos() {
+        try {
+            const res = await fetch(`/negocio/${negocioId}`);
+            if (!res.ok) return;
+            const datos = await res.json();
+            document.getElementById("nombre").value = datos.nombre || "";
+            document.getElementById("ubicacion").value = datos.ubicacion || "";
+            document.getElementById("telefono").value = datos.telefono || "";
+            document.getElementById("whatsapp").value = datos.whatsapp || "";
+            document.getElementById("sitio_web").value = datos.sitio_web || "";
+            document.getElementById("horario").value = datos.horario || "";
+            document.getElementById("contacto").value = datos.contacto || "";
+            document.getElementById("info_adicional").value = datos.info_adicional || "";
+            if (datos.servicios) {
+                const servicios = JSON.parse(datos.servicios);
+                document.getElementById("servicios").value = servicios.map(s => 
+                    s.precio ? `${s.nombre} - $${s.precio}` : s.nombre
+                ).join("\n");
+            }
+        } catch(e) {}
+    }
+
+    async function guardar() {
+        const nombre = document.getElementById("nombre").value;
+        const contacto = document.getElementById("contacto").value;
+        if (!nombre || !contacto) {
+            alert("El nombre del negocio y el responsable son obligatorios.");
+            return;
+        }
+        const serviciosRaw = document.getElementById("servicios").value;
+        const servicios = serviciosRaw.split("\n").filter(l => l.trim()).map(linea => {
+            const partes = linea.split(" - $");
+            return { nombre: partes[0].trim(), precio: partes[1] ? parseInt(partes[1]) : null };
+        });
+        const datos = {
+            nombre,
+            ubicacion: document.getElementById("ubicacion").value,
+            telefono: document.getElementById("telefono").value,
+            whatsapp: document.getElementById("whatsapp").value,
+            sitio_web: document.getElementById("sitio_web").value,
+            horario: document.getElementById("horario").value,
+            contacto,
+            servicios,
+            info_adicional: document.getElementById("info_adicional").value
+        };
+        const res = await fetch("/guardar", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(datos)
+        });
+        const result = await res.json();
+        document.getElementById("success").style.display = "block";
+    }
+
+    cargarDatos();
+</script>
+
+</body>
+</html>
