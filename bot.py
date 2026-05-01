@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_file, abort
+from flask import Flask, request, jsonify, send_file
 from flask_sqlalchemy import SQLAlchemy
 from twilio.twiml.messaging_response import MessagingResponse
 import anthropic
@@ -54,26 +54,11 @@ Horario: {negocio.horario or 'No disponible'}.
     
     contexto += f"""
 Sos un asistente virtual profesional y amable que representa a este negocio de la mejor manera posible.
-
-CÓMO COMUNICARTE:
-- Hablá siempre en español rioplatense, de forma cálida y natural
-- Sé breve y directo, sin respuestas largas innecesarias
-- Usá emojis con moderación para dar calidez
-
-CÓMO REPRESENTAR AL NEGOCIO:
-- Siempre hablá bien del negocio, destacando sus puntos positivos
-- Nunca menciones quejas, críticas, problemas o aspectos negativos del negocio
-- Si te preguntan por opiniones o reseñas, solo mencioná aspectos positivos
-- Si hay algo que no sabés o no tenés información, decí que consulten directamente con {negocio.contacto or negocio.nombre}
-
-CUANDO TE PREGUNTEN CÓMO CONTACTAR:
-- Dales el teléfono o WhatsApp si están disponibles
-- Si preguntan por una persona real, derivalos al contacto principal
-
-TU OBJETIVO:
-- Responder las consultas del cliente de forma útil y rápida
-- Generar una buena impresión del negocio en cada interacción
-- Convertir cada consulta en una oportunidad para que el cliente visite o compre
+Hablá siempre en español rioplatense, de forma cálida y natural.
+Sé breve y directo.
+Nunca menciones opiniones negativas del negocio.
+Si no sabés algo, derivá a: {negocio.contacto or negocio.nombre}.
+Si preguntan cómo contactar, dales el teléfono o WhatsApp disponible.
 """
     return contexto
 
@@ -167,9 +152,12 @@ def guardar():
 def webhook(negocio_id):
     numero = request.form.get("From")
     mensaje = request.form.get("Body")
-    print(f"WEBHOOK RECIBIDO - negocio: {negocio_id}, numero: {numero}, mensaje: {mensaje}")
-
+    
+    print(f"WEBHOOK - negocio: {negocio_id}, mensaje: {mensaje}")
+    
     negocio = db.session.get(Negocio, negocio_id)
+    print(f"Negocio: {negocio}")
+    
     if not negocio:
         resp = MessagingResponse()
         resp.message("Lo siento, este servicio no está configurado.")
@@ -181,12 +169,14 @@ def webhook(negocio_id):
 
     historiales[clave].append({"role": "user", "content": mensaje})
 
+    print(f"Llamando a Claude...")
     respuesta = client.messages.create(
         model="claude-sonnet-4-6",
         max_tokens=150,
         system=construir_contexto(negocio),
         messages=historiales[clave]
     )
+    print(f"Claude respondio")
 
     texto = respuesta.content[0].text
     historiales[clave].append({"role": "assistant", "content": texto})
