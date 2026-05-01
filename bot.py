@@ -167,6 +167,7 @@ def guardar():
 def webhook(negocio_id):
     numero = request.form.get("From")
     mensaje = request.form.get("Body")
+    print(f"WEBHOOK RECIBIDO - negocio: {negocio_id}, numero: {numero}, mensaje: {mensaje}")
 
     negocio = db.session.get(Negocio, negocio_id)
     if not negocio:
