@@ -396,6 +396,22 @@ def mp_webhook():
     
     return "", 200
 
+@app.route("/meta-webhook", methods=["GET", "POST"])
+def meta_webhook():
+    if request.method == "GET":
+        mode      = request.args.get("hub.mode")
+        token     = request.args.get("hub.verify_token")
+        challenge = request.args.get("hub.challenge")
+        
+        if mode == "subscribe" and token == os.environ.get("META_VERIFY_TOKEN"):
+            logger.info("Meta webhook verificado correctamente")
+            return challenge, 200
+        return "Token inválido", 403
+
+    datos = request.get_json(silent=True) or {}
+    logger.info(f"Meta webhook recibido: {datos}")
+    return "", 200
+
 @app.route("/health")
 def health():
     return jsonify({"status": "ok", "timestamp": datetime.utcnow().isoformat()})
