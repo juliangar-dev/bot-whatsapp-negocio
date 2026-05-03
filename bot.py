@@ -12,6 +12,7 @@ import json
 import os
 import uuid
 import logging
+import mercadopago
 from datetime import datetime
 from dotenv import load_dotenv
 
@@ -43,6 +44,8 @@ app.config.update(
 
 db = SQLAlchemy(app)
 client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+mp = mercadopago.SDK(os.environ.get("MP_ACCESS_TOKEN"))
+MP_PUBLIC_KEY = os.environ.get("MP_PUBLIC_KEY")
 
 # ─────────────────────────────────────────
 # Modelos
@@ -349,6 +352,49 @@ def webhook(negocio_id):
 # ─────────────────────────────────────────
 # Health check
 # ─────────────────────────────────────────
+
+@app.route("/suscribir/<negocio_id>")
+def suscribir(negocio_id):
+    return send_file("suscripcion.html")
+
+
+@app.route("/crear-suscripcion/<negocio_id>", methods=["POST"])
+def crear_suscripcion(negocio_id):
+    negocio = db.session.get(Negocio, negocio_id)
+    if not negocio:
+        return error_json("Negocio no encontrado.", 404)
+
+    plan_data = {
+        "reason": f"RespondIA - Bot WhatsApp para {negocio.nombre}",
+        "auto_recurring": {
+            "frequency": 1,
+            "frequency_type": "months",
+            "transaction_amount": 15000,
+            "currency_id": "ARS"
+        },
+        "back_url": f"https://web-production-5f75a.up.railway.app/panel/{negocio_id}",
+        "payer_email": request.json.get("email")
+    }
+
+    resultado = mp.preapproval().create(plan_data)
+
+    if resultado["status"] == 201:
+        init_point = resultado["response"]["init_point"]
+        return jsonify({"init_point": init_point})
+    else:
+        logger.error(f"Error MP: {resultado}")
+        return error_json("Error al crear suscripción.", 500)
+
+
+@app.route("/mp-webhook", methods=["POST"])
+def mp_webhook():
+    datos = request.get_json(silent=True) or {}
+    tipo  = datos.get("type")
+    
+    if tipo == "subscription_preapproval":
+        logger.info(f"Evento MP recibido: {datos}")
+    
+    return "", 200
 
 @app.route("/health")
 def health():
