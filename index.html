@@ -275,17 +275,29 @@
     <button onclick="crear()" id="btn-crear">✅ Activar mi bot de WhatsApp</button>
 
     <div class="resultado" id="resultado">
-        <h4>🎉 ¡Tu bot está activo!</h4>
-        <div class="resultado-item">
-            <strong>🔗 Link de tu panel</strong>
-            <span id="panel-link"></span>
-        </div>
-        <div class="resultado-item">
-            <strong>🤖 ID de tu bot</strong>
-            <span id="bot-id"></span>
-        </div>
-        <p class="resultado-nota">⚠️ Guardá el link y tu contraseña. Los vas a necesitar para actualizar tu info.</p>
+    <h4>🎉 ¡Tu bot está listo!</h4>
+    <div class="resultado-item">
+        <strong>🔗 Link de tu panel</strong>
+        <span id="panel-link"></span>
     </div>
+    <div class="resultado-item">
+        <strong>🤖 ID de tu bot</strong>
+        <span id="bot-id"></span>
+    </div>
+    <a href="#" id="pago-link" target="_blank" style="
+        display: block;
+        margin-top: 16px;
+        background: linear-gradient(135deg, #25D366, #128C7E);
+        color: white;
+        text-align: center;
+        padding: 14px;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 14px;
+        text-decoration: none;
+    ">💳 Activar suscripción con Mercado Pago →</a>
+    <p class="resultado-nota">⚠️ Guardá el link del panel y tu contraseña. Los vas a necesitar para actualizar tu info.</p>
+</div>
 </div>
 
 <footer>© 2026 RespondIA · Todos los derechos reservados</footer>
@@ -393,6 +405,7 @@
             const base = window.location.origin;
             document.getElementById("panel-link").textContent = `${base}/panel/${result.id}`;
             document.getElementById("bot-id").textContent     = result.id;
+            document.getElementById("pago-link").href         = `${base}/suscribir/${result.id}`;
             document.getElementById("resultado").style.display = "block";
             document.getElementById("resultado").scrollIntoView({ behavior: "smooth" });
 
