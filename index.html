@@ -7,6 +7,7 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; color: #333; }
+
         header {
             background: linear-gradient(135deg, #25D366, #128C7E);
             color: white;
@@ -15,11 +16,38 @@
             justify-content: space-between;
             align-items: center;
         }
-        header h1 { font-size: 28px; letter-spacing: 1px; }
-        header p { font-size: 14px; opacity: 0.9; }
-        .hero { text-align: center; padding: 60px 20px 40px; }
-        .hero h2 { font-size: 32px; color: #128C7E; margin-bottom: 10px; }
-        .hero p { font-size: 18px; color: #555; max-width: 500px; margin: 0 auto; }
+        header h1 { font-size: 26px; font-weight: 700; }
+        header p { font-size: 13px; opacity: 0.9; }
+
+        .hero {
+            text-align: center;
+            padding: 50px 20px 30px;
+        }
+        .hero h2 { font-size: 30px; color: #128C7E; margin-bottom: 10px; }
+        .hero p { font-size: 16px; color: #666; max-width: 520px; margin: 0 auto; line-height: 1.6; }
+
+        .beneficios {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            flex-wrap: wrap;
+            padding: 20px 20px 40px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .beneficio {
+            background: white;
+            border-radius: 12px;
+            padding: 20px 24px;
+            text-align: center;
+            flex: 1;
+            min-width: 180px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+        .beneficio .icono { font-size: 28px; margin-bottom: 8px; }
+        .beneficio h3 { font-size: 14px; font-weight: 700; color: #128C7E; margin-bottom: 4px; }
+        .beneficio p { font-size: 13px; color: #777; line-height: 1.4; }
+
         .form-container {
             background: white;
             max-width: 580px;
@@ -28,19 +56,80 @@
             border-radius: 16px;
             box-shadow: 0 4px 24px rgba(0,0,0,0.08);
         }
-        .form-container h3 { font-size: 20px; margin-bottom: 24px; color: #128C7E; }
-        label { display: block; font-weight: 600; margin-bottom: 6px; color: #444; font-size: 14px; }
+        .form-container h3 { font-size: 18px; margin-bottom: 6px; color: #128C7E; }
+        .form-container .subtitulo { font-size: 13px; color: #999; margin-bottom: 28px; }
+
+        .seccion { margin-bottom: 28px; }
+        .seccion-titulo {
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #aaa;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            font-size: 13px;
+            color: #555;
+            margin-bottom: 6px;
+        }
+        label span.opcional {
+            font-weight: 400;
+            color: #aaa;
+            font-size: 12px;
+            margin-left: 4px;
+        }
+
+        .input-wrapper {
+            position: relative;
+            margin-bottom: 16px;
+        }
         input, textarea {
             width: 100%;
-            padding: 12px;
-            margin-bottom: 20px;
-            border: 1px solid #ddd;
+            padding: 11px 14px;
+            border: 1.5px solid #e0e0e0;
             border-radius: 8px;
-            font-size: 15px;
+            font-size: 14px;
             font-family: inherit;
-            transition: border 0.2s;
+            transition: border 0.2s, box-shadow 0.2s;
+            background: #fafafa;
         }
-        input:focus, textarea:focus { outline: none; border-color: #25D366; }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #25D366;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(37,211,102,0.1);
+        }
+        input.error { border-color: #e53935; }
+        input.ok { border-color: #25D366; }
+
+        .input-password { padding-right: 44px; }
+        .toggle-password {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #aaa;
+            font-size: 18px;
+            user-select: none;
+            transition: color 0.2s;
+        }
+        .toggle-password:hover { color: #555; }
+
+        .hint {
+            font-size: 12px;
+            color: #aaa;
+            margin-top: -10px;
+            margin-bottom: 16px;
+        }
+        .hint.error-msg { color: #e53935; }
+
         button {
             width: 100%;
             background: linear-gradient(135deg, #25D366, #128C7E);
@@ -49,124 +138,272 @@
             border: none;
             border-radius: 8px;
             font-size: 16px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+            letter-spacing: 0.3px;
         }
-        button:hover { opacity: 0.9; }
+        button:hover { opacity: 0.92; }
+        button:active { transform: scale(0.99); }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
+
         .resultado {
             display: none;
             background: #e8f5e9;
-            border: 1px solid #25D366;
-            color: #1a7a3a;
-            padding: 20px;
-            border-radius: 8px;
+            border: 1.5px solid #25D366;
+            padding: 24px;
+            border-radius: 10px;
             margin-top: 20px;
         }
-        .resultado h4 { margin-bottom: 12px; font-size: 16px; }
-        .resultado p { font-size: 14px; margin-bottom: 8px; }
-        .resultado strong { color: #128C7E; }
-        footer { text-align: center; padding: 20px; color: #aaa; font-size: 13px; }
+        .resultado h4 { font-size: 16px; color: #1a7a3a; margin-bottom: 12px; }
+        .resultado-item {
+            background: white;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 10px;
+            font-size: 13px;
+        }
+        .resultado-item strong { color: #128C7E; display: block; margin-bottom: 4px; font-size: 12px; text-transform: uppercase; }
+        .resultado-item span { color: #333; word-break: break-all; }
+        .resultado-nota { font-size: 12px; color: #888; margin-top: 12px; text-align: center; }
+
+        footer { text-align: center; padding: 20px; color: #bbb; font-size: 12px; }
     </style>
 </head>
 <body>
-    <header>
-        <div>
-            <h1>🤖 RespondIA</h1>
-            <p>Tu negocio responde solo, las 24hs</p>
-        </div>
-    </header>
 
-    <div class="hero">
-        <h2>Activá tu bot de WhatsApp</h2>
-        <p>Completá los datos de tu negocio y tu bot empieza a responder al instante.</p>
+<header>
+    <div>
+        <h1>🤖 RespondIA</h1>
+        <p>Tu negocio responde solo, las 24hs</p>
+    </div>
+</header>
+
+<div class="hero">
+    <h2>Activá tu asistente de WhatsApp</h2>
+    <p>Configurá tu bot en minutos. Responde preguntas, da horarios, informa precios — sin que estés presente.</p>
+</div>
+
+<div class="beneficios">
+    <div class="beneficio">
+        <div class="icono">⚡</div>
+        <h3>Respuesta instantánea</h3>
+        <p>Tu negocio responde en segundos, a cualquier hora</p>
+    </div>
+    <div class="beneficio">
+        <div class="icono">🧠</div>
+        <h3>Inteligencia artificial</h3>
+        <p>Entiende preguntas naturales, no solo comandos</p>
+    </div>
+    <div class="beneficio">
+        <div class="icono">✏️</div>
+        <h3>Fácil de actualizar</h3>
+        <p>Cambiá precios y horarios cuando quieras</p>
+    </div>
+</div>
+
+<div class="form-container">
+    <h3>📋 Configurá tu bot</h3>
+    <p class="subtitulo">Completá los datos de tu negocio. Solo tarda 2 minutos.</p>
+
+    <div class="seccion">
+        <div class="seccion-titulo">Información del negocio</div>
+
+        <label>Nombre del negocio <span style="color:#e53935">*</span></label>
+        <div class="input-wrapper">
+            <input type="text" id="nombre" placeholder="Ej: Peluquería Carlos" oninput="validarCampo(this)">
+        </div>
+
+        <label>Dirección / Ubicación <span class="opcional">(opcional)</span></label>
+        <div class="input-wrapper">
+            <input type="text" id="ubicacion" placeholder="Ej: Av. Corrientes 1234, CABA">
+        </div>
+
+        <label>Teléfono <span class="opcional">(opcional)</span></label>
+        <div class="input-wrapper">
+            <input type="text" id="telefono" placeholder="Ej: 011-4444-5555">
+        </div>
+
+        <label>WhatsApp <span class="opcional">(opcional)</span></label>
+        <div class="input-wrapper">
+            <input type="text" id="whatsapp" placeholder="Ej: +5491112345678">
+        </div>
+
+        <label>Sitio web <span class="opcional">(opcional)</span></label>
+        <div class="input-wrapper">
+            <input type="text" id="sitio_web" placeholder="Ej: www.mipagina.com.ar">
+        </div>
+
+        <label>Horario de atención <span class="opcional">(opcional)</span></label>
+        <div class="input-wrapper">
+            <input type="text" id="horario" placeholder="Ej: Lunes a sábado de 9 a 20hs">
+        </div>
+
+        <label>Nombre del responsable <span style="color:#e53935">*</span></label>
+        <div class="input-wrapper">
+            <input type="text" id="contacto" placeholder="Ej: Carlos" oninput="validarCampo(this)">
+        </div>
     </div>
 
-    <div class="form-container">
-        <h3>📋 Datos del negocio</h3>
+    <div class="seccion">
+        <div class="seccion-titulo">Servicios y precios</div>
+        <label>Uno por línea — formato: Servicio - $precio <span class="opcional">(opcional)</span></label>
+        <div class="input-wrapper">
+            <textarea id="servicios" rows="5" placeholder="Corte de pelo - $3000&#10;Corte y barba - $4500&#10;Afeitado - $2000"></textarea>
+        </div>
+        <p class="hint">Si no tenés precios fijos, escribí solo el nombre del servicio.</p>
+    </div>
 
-        <label>Nombre del negocio *</label>
-        <input type="text" id="nombre" placeholder="Ej: Peluquería Carlos">
-
-        <label>Contraseña para tu panel *</label>
-        <input type="password" id="password" placeholder="Elegí una contraseña segura">
-
-        <label>Dirección / Ubicación</label>
-        <input type="text" id="ubicacion" placeholder="Ej: Av. Corrientes 1234, Buenos Aires">
-
-        <label>Teléfono de contacto</label>
-        <input type="text" id="telefono" placeholder="Ej: 011-4444-5555">
-
-        <label>WhatsApp</label>
-        <input type="text" id="whatsapp" placeholder="Ej: +5491112345678">
-
-        <label>Sitio web</label>
-        <input type="text" id="sitio_web" placeholder="Ej: www.mipagina.com.ar">
-
-        <label>Horario de atención</label>
-        <input type="text" id="horario" placeholder="Ej: Lunes a sábado de 9 a 20hs">
-
-        <label>Servicios y precios (uno por línea, formato: Servicio - $precio)</label>
-        <textarea id="servicios" rows="5" placeholder="Corte de pelo - $3000&#10;Corte y barba - $4500"></textarea>
-
-        <label>Nombre del dueño o responsable *</label>
-        <input type="text" id="contacto" placeholder="Ej: Carlos">
-
-        <label>Información adicional</label>
-        <textarea id="info_adicional" rows="3" placeholder="Ej: Aceptamos tarjeta y efectivo..."></textarea>
-
-        <button onclick="crear()">✅ Activar mi bot de WhatsApp</button>
-
-        <div class="resultado" id="resultado">
-            <h4>🎉 ¡Tu bot está activo!</h4>
-            <p>Guardá esta información — la vas a necesitar para acceder a tu panel:</p>
-            <p>🔗 <strong>Link de tu panel:</strong> <span id="panel-link"></span></p>
-            <p>🤖 <strong>ID de tu bot:</strong> <span id="bot-id"></span></p>
-            <p style="margin-top:12px; font-size:13px; color:#555;">Guardá el link y tu contraseña en un lugar seguro.</p>
+    <div class="seccion">
+        <div class="seccion-titulo">Información adicional</div>
+        <label>Todo lo que quieras que el bot sepa <span class="opcional">(opcional)</span></label>
+        <div class="input-wrapper">
+            <textarea id="info_adicional" rows="4" placeholder="Ej: Aceptamos tarjeta y efectivo. Tenemos estacionamiento. Hacemos envíos a todo el país..."></textarea>
         </div>
     </div>
 
-    <footer>© 2026 RespondIA · Todos los derechos reservados</footer>
+    <div class="seccion">
+        <div class="seccion-titulo">Acceso a tu panel</div>
+        <label>Contraseña para tu panel <span style="color:#e53935">*</span></label>
+        <div class="input-wrapper">
+            <input type="password" id="password" class="input-password" placeholder="Mínimo 4 caracteres" oninput="validarPassword()">
+            <span class="toggle-password" onclick="togglePassword()">👁</span>
+        </div>
+        <p class="hint" id="hint-password">Usala para entrar a tu panel y actualizar la info cuando quieras.</p>
+    </div>
 
-    <script>
-        async function crear() {
-            const nombre = document.getElementById("nombre").value;
-            const password = document.getElementById("password").value;
-            const contacto = document.getElementById("contacto").value;
+    <button onclick="crear()" id="btn-crear">✅ Activar mi bot de WhatsApp</button>
 
-            if (!nombre || !password || !contacto) {
-                alert("El nombre, contraseña y responsable son obligatorios.");
-                return;
-            }
+    <div class="resultado" id="resultado">
+        <h4>🎉 ¡Tu bot está activo!</h4>
+        <div class="resultado-item">
+            <strong>🔗 Link de tu panel</strong>
+            <span id="panel-link"></span>
+        </div>
+        <div class="resultado-item">
+            <strong>🤖 ID de tu bot</strong>
+            <span id="bot-id"></span>
+        </div>
+        <p class="resultado-nota">⚠️ Guardá el link y tu contraseña. Los vas a necesitar para actualizar tu info.</p>
+    </div>
+</div>
 
-            const serviciosRaw = document.getElementById("servicios").value;
-            const servicios = serviciosRaw.split("\n").filter(l => l.trim()).map(linea => {
-                const partes = linea.split(" - $");
-                return { nombre: partes[0].trim(), precio: partes[1] ? parseInt(partes[1]) : null };
-            });
+<footer>© 2026 RespondIA · Todos los derechos reservados</footer>
 
-            const datos = {
-                nombre, password, contacto,
-                ubicacion: document.getElementById("ubicacion").value,
-                telefono: document.getElementById("telefono").value,
-                whatsapp: document.getElementById("whatsapp").value,
-                sitio_web: document.getElementById("sitio_web").value,
-                horario: document.getElementById("horario").value,
-                servicios,
-                info_adicional: document.getElementById("info_adicional").value
-            };
+<script>
+    function validarCampo(input) {
+        if (input.value.trim()) {
+            input.classList.add("ok");
+            input.classList.remove("error");
+        } else {
+            input.classList.remove("ok");
+        }
+    }
 
-            const res = await fetch("/crear", {
-                method: "POST",
+    function validarPassword() {
+        const input = document.getElementById("password");
+        const hint  = document.getElementById("hint-password");
+        const val   = input.value;
+
+        if (val.length === 0) {
+            input.classList.remove("ok", "error");
+            hint.textContent = "Usala para entrar a tu panel y actualizar la info cuando quieras.";
+            hint.classList.remove("error-msg");
+        } else if (val.length < 4) {
+            input.classList.add("error");
+            input.classList.remove("ok");
+            hint.textContent = `Necesitás al menos 4 caracteres (${val.length}/4)`;
+            hint.classList.add("error-msg");
+        } else {
+            input.classList.add("ok");
+            input.classList.remove("error");
+            hint.textContent = "✓ Contraseña válida";
+            hint.classList.remove("error-msg");
+            hint.style.color = "#25D366";
+        }
+    }
+
+    function togglePassword() {
+        const input = document.getElementById("password");
+        const icono = document.querySelector(".toggle-password");
+        if (input.type === "password") {
+            input.type = "text";
+            icono.textContent = "🙈";
+        } else {
+            input.type = "password";
+            icono.textContent = "👁";
+        }
+    }
+
+    async function crear() {
+        const nombre   = document.getElementById("nombre").value.trim();
+        const contacto = document.getElementById("contacto").value.trim();
+        const password = document.getElementById("password").value.trim();
+
+        if (!nombre) {
+            alert("El nombre del negocio es obligatorio.");
+            document.getElementById("nombre").focus();
+            return;
+        }
+        if (!contacto) {
+            alert("El nombre del responsable es obligatorio.");
+            document.getElementById("contacto").focus();
+            return;
+        }
+        if (!password || password.length < 4) {
+            alert("La contraseña debe tener al menos 4 caracteres.");
+            document.getElementById("password").focus();
+            return;
+        }
+
+        const btn = document.getElementById("btn-crear");
+        btn.disabled = true;
+        btn.textContent = "Activando...";
+
+        const serviciosRaw = document.getElementById("servicios").value;
+        const servicios = serviciosRaw.split("\n").filter(l => l.trim()).map(linea => {
+            const partes = linea.split(" - $");
+            return { nombre: partes[0].trim(), precio: partes[1] ? parseInt(partes[1]) : null };
+        });
+
+        const datos = {
+            nombre, contacto, password,
+            ubicacion:      document.getElementById("ubicacion").value.trim(),
+            telefono:       document.getElementById("telefono").value.trim(),
+            whatsapp:       document.getElementById("whatsapp").value.trim(),
+            sitio_web:      document.getElementById("sitio_web").value.trim(),
+            horario:        document.getElementById("horario").value.trim(),
+            servicios,
+            info_adicional: document.getElementById("info_adicional").value.trim(),
+        };
+
+        try {
+            const res    = await fetch("/crear", {
+                method:  "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(datos)
+                body:    JSON.stringify(datos),
             });
             const result = await res.json();
 
+            if (!res.ok) {
+                alert(result.error || "Hubo un error al crear el bot.");
+                return;
+            }
+
             const base = window.location.origin;
             document.getElementById("panel-link").textContent = `${base}/panel/${result.id}`;
-            document.getElementById("bot-id").textContent = result.id;
+            document.getElementById("bot-id").textContent     = result.id;
             document.getElementById("resultado").style.display = "block";
+            document.getElementById("resultado").scrollIntoView({ behavior: "smooth" });
+
+        } catch (e) {
+            alert("Error de conexión. Por favor intentá de nuevo.");
+        } finally {
+            btn.disabled    = false;
+            btn.textContent = "✅ Activar mi bot de WhatsApp";
         }
-    </script>
+    }
+</script>
+
 </body>
 </html>
