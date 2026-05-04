@@ -451,7 +451,7 @@ def obtener_qr(negocio_id):
             timeout=10
         )
         qr_data = res_qr.json()
-        qr = qr_data.get("base64") or qr_data.get("qrcode", {}).get("base64")
+        qr = qr_data.get("code") or qr_data.get("qrcode", {}).get("code")
         
         if qr:
             return jsonify({"qr": qr})

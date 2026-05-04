@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RespondIA — Panel de control</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
         /* ── Variables ───────────────────────────────── */
@@ -445,7 +446,7 @@
             Estado: verificando...
         </div>
         <div id="qr-container" style="display:none;margin-bottom:16px;">
-            <img id="qr-img" src="" style="width:220px;height:220px;border-radius:8px;border:1px solid var(--border);">
+            <div id="qr-img" style="width:220px;height:220px;background:white;padding:10px;border-radius:8px;"></div>
         </div>
         <button class="btn-primary" onclick="obtenerQR()" style="max-width:200px;">
             Ver QR para conectar
@@ -630,7 +631,9 @@ async function obtenerQR() {
         const data = await res.json();
         if (data.qr) {
             document.getElementById("qr-container").style.display = "block";
-            document.getElementById("qr-img").src = data.qr;
+            const qrDiv = document.getElementById("qr-img");
+            qrDiv.innerHTML = "";
+            new QRCode(qrDiv, { text: data.qr, width: 200, height: 200 });
             document.getElementById("qr-status").textContent = "Escaneá este QR con WhatsApp del negocio.";
         } else if (data.status === "connected") {
             document.getElementById("qr-status").textContent = "✅ WhatsApp conectado correctamente.";
