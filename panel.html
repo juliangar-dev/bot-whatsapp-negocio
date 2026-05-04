@@ -431,6 +431,28 @@
             </div>
         </div>
 
+<!-- Card WhatsApp -->
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">Conectar WhatsApp</span>
+    </div>
+    <div class="card-body">
+        <p style="font-size:13px;color:var(--text-2);margin-bottom:16px;">
+            Escaneá el código QR con el celular del negocio para conectar WhatsApp.
+            Una vez conectado, el bot empezará a responder mensajes automáticamente.
+        </p>
+        <div id="qr-status" style="margin-bottom:16px;font-size:13px;color:var(--text-3);">
+            Estado: verificando...
+        </div>
+        <div id="qr-container" style="display:none;margin-bottom:16px;">
+            <img id="qr-img" src="" style="width:220px;height:220px;border-radius:8px;border:1px solid var(--border);">
+        </div>
+        <button class="btn-primary" onclick="obtenerQR()" style="max-width:200px;">
+            Ver QR para conectar
+        </button>
+    </div>
+</div>
+
 <!-- Botón guardar -->
         <button class="btn-primary" id="btn-guardar" onclick="guardar()">
             Guardar cambios
@@ -602,6 +624,22 @@
             btn.textContent = "Guardar cambios";
         }
     }
+
+async function obtenerQR() {
+        const res = await fetch(`/qr/${negocioId}`);
+        const data = await res.json();
+        if (data.qr) {
+            document.getElementById("qr-container").style.display = "block";
+            document.getElementById("qr-img").src = data.qr;
+            document.getElementById("qr-status").textContent = "Escaneá este QR con WhatsApp del negocio.";
+        } else if (data.status === "connected") {
+            document.getElementById("qr-status").textContent = "✅ WhatsApp conectado correctamente.";
+            document.getElementById("qr-container").style.display = "none";
+        } else {
+            toast("No se pudo obtener el QR.", "error");
+        }
+    }
+
 </script>
 
 </body>

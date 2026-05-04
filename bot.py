@@ -15,6 +15,7 @@ import logging
 import mercadopago
 from datetime import datetime
 from dotenv import load_dotenv
+import requests
 
 # ─────────────────────────────────────────
 # Configuración inicial
@@ -240,6 +241,18 @@ def crear_negocio():
 
     logger.info(f"Negocio creado: {negocio_id} - {nombre}")
 
+    # Crear instancia en Evolution API automáticamente
+    try:
+        requests.post(
+            "https://evolution-api-production-47ce.up.railway.app/instance/create",
+            json={"instanceName": negocio_id, "integration": "WHATSAPP-BAILEYS"},
+            headers={"apikey": "431d1dcb9c848bcdc5d4c98fe2f5d10c48bd50ff3b1b4edfb2c557592dcc75fd"},
+            timeout=10
+        )
+        logger.info(f"Instancia Evolution creada: {negocio_id}")
+    except Exception as e:
+        logger.warning(f"No se pudo crear instancia Evolution: {e}")
+
     return jsonify({
         "mensaje": f"✅ Bot activado para {nombre}",
         "id":      negocio_id,
@@ -412,6 +425,43 @@ def meta_webhook():
     logger.info(f"Meta webhook recibido: {datos}")
     return "", 200
 
+@app.route("/qr/<negocio_id>")
+def obtener_qr(negocio_id):
+    negocio = db.session.get(Negocio, negocio_id)
+    if not negocio:
+        return error_json("Negocio no encontrado.", 404)
+    
+    try:
+        # Verificar estado de la instancia
+        res = requests.get(
+            f"https://evolution-api-production-47ce.up.railway.app/instance/connectionState/{negocio_id}",
+            headers={"apikey": "431d1dcb9c848bcdc5d4c98fe2f5d10c48bd50ff3b1b4edfb2c557592dcc75fd"},
+            timeout=10
+        )
+        data = res.json()
+        estado = data.get("instance", {}).get("state", "")
+        
+        if estado == "open":
+            return jsonify({"status": "connected"})
+        
+        # Pedir QR
+        res_qr = requests.get(
+            f"https://evolution-api-production-47ce.up.railway.app/instance/connect/{negocio_id}",
+            headers={"apikey": "431d1dcb9c848bcdc5d4c98fe2f5d10c48bd50ff3b1b4edfb2c557592dcc75fd"},
+            timeout=10
+        )
+        qr_data = res_qr.json()
+        qr = qr_data.get("base64") or qr_data.get("qrcode", {}).get("base64")
+        
+        if qr:
+            return jsonify({"qr": qr})
+        
+        return jsonify({"status": "waiting"})
+        
+    except Exception as e:
+        logger.error(f"Error obteniendo QR: {e}")
+        return error_json("Error conectando con Evolution API.", 500)
+
 @app.route("/health")
 def health():
     return jsonify({"status": "ok", "timestamp": datetime.utcnow().isoformat()})
@@ -468,11 +518,12 @@ def evolution_webhook():
     historial.append({"role": "assistant", "content": texto})
 
     # Enviar respuesta via Evolution API
-    import requests as req
-    url = f"https://evolution-api-production-47ce.up.railway.app/message/sendText/respondia"
-    headers = {"apikey": "431d1dcb9c848bcdc5d4c98fe2f5d10c48bd50ff3b1b4edfb2c557592dcc75fd"}
-    payload = {"number": numero, "text": texto}
-    req.post(url, json=payload, headers=headers)
+    requests.post(
+        f"https://evolution-api-production-47ce.up.railway.app/message/sendText/{negocio.id}",
+        json={"number": numero, "text": texto},
+        headers={"apikey": "431d1dcb9c848bcdc5d4c98fe2f5d10c48bd50ff3b1b4edfb2c557592dcc75fd"},
+        timeout=10
+    )
 
     return "", 200
 
