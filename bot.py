@@ -442,7 +442,8 @@ def evolution_webhook():
         return "", 200
 
     # Buscar negocio por número de WhatsApp
-    negocio = Negocio.query.filter_by(whatsapp=numero.replace("@s.whatsapp.net", "")).first()
+    instance = datos.get("instance", "")
+    negocio = db.session.get(Negocio, instance)
     
     if not negocio or not negocio.activo:
         return "", 200
