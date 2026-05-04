@@ -243,13 +243,30 @@ def crear_negocio():
 
     # Crear instancia en Evolution API automáticamente
     try:
+        EVO_URL = "https://evolution-api-production-47ce.up.railway.app"
+        EVO_KEY = "431d1dcb9c848bcdc5d4c98fe2f5d10c48bd50ff3b1b4edfb2c557592dcc75fd"
+        EVO_HEADERS = {"apikey": EVO_KEY}
+
         requests.post(
-            "https://evolution-api-production-47ce.up.railway.app/instance/create",
+            f"{EVO_URL}/instance/create",
             json={"instanceName": negocio_id, "integration": "WHATSAPP-BAILEYS"},
-            headers={"apikey": "431d1dcb9c848bcdc5d4c98fe2f5d10c48bd50ff3b1b4edfb2c557592dcc75fd"},
+            headers=EVO_HEADERS,
             timeout=10
         )
-        logger.info(f"Instancia Evolution creada: {negocio_id}")
+
+        requests.post(
+            f"{EVO_URL}/webhook/set/{negocio_id}",
+            json={
+                "enabled": True,
+                "url": "https://web-production-5f75a.up.railway.app/evolution-webhook",
+                "webhookByEvents": False,
+                "webhookBase64": False,
+                "events": ["MESSAGES_UPSERT"]
+            },
+            headers=EVO_HEADERS,
+            timeout=10
+        )
+        logger.info(f"Instancia y webhook Evolution creados: {negocio_id}")
     except Exception as e:
         logger.warning(f"No se pudo crear instancia Evolution: {e}")
 
