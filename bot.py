@@ -257,11 +257,13 @@ def crear_negocio():
         requests.post(
             f"{EVO_URL}/webhook/set/{negocio_id}",
             json={
-                "enabled": True,
-                "url": "https://web-production-5f75a.up.railway.app/evolution-webhook",
-                "webhookByEvents": False,
-                "webhookBase64": False,
-                "events": ["MESSAGES_UPSERT"]
+                "webhook": {
+                    "enabled": True,
+                    "url": "https://web-production-5f75a.up.railway.app/evolution-webhook",
+                    "webhookByEvents": False,
+                    "webhookBase64": False,
+                    "events": ["MESSAGES_UPSERT"]
+                }
             },
             headers=EVO_HEADERS,
             timeout=10
