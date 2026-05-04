@@ -421,6 +421,60 @@ def health():
 # Entry point
 # ─────────────────────────────────────────
 
+@app.route("/evolution-webhook", methods=["POST"])
+def evolution_webhook():
+    datos = request.get_json(silent=True) or {}
+    
+    # Solo procesar mensajes nuevos
+    if datos.get("event") != "messages.upsert":
+        return "", 200
+    
+    mensaje_data = datos.get("data", {})
+    
+    # Ignorar mensajes propios
+    if mensaje_data.get("key", {}).get("fromMe"):
+        return "", 200
+    
+    numero = mensaje_data.get("key", {}).get("remoteJid", "")
+    mensaje = mensaje_data.get("message", {}).get("conversation", "")
+    
+    if not numero or not mensaje:
+        return "", 200
+
+    # Buscar negocio por número de WhatsApp
+    negocio = Negocio.query.filter_by(whatsapp=numero.replace("@s.whatsapp.net", "")).first()
+    
+    if not negocio or not negocio.activo:
+        return "", 200
+
+    clave = f"{negocio.id}:{numero}"
+    historial = obtener_historial(clave)
+    historial.append({"role": "user", "content": mensaje})
+    limpiar_historial_si_necesario(clave)
+
+    try:
+        respuesta = client.messages.create(
+            model="claude-sonnet-4-6",
+            max_tokens=300,
+            system=construir_sistema_prompt(negocio),
+            messages=historial,
+        )
+        texto = respuesta.content[0].text.strip()
+    except anthropic.APIError as e:
+        logger.error(f"Error Anthropic: {e}")
+        return "", 200
+
+    historial.append({"role": "assistant", "content": texto})
+
+    # Enviar respuesta via Evolution API
+    import requests as req
+    url = f"https://evolution-api-production-47ce.up.railway.app/message/sendText/respondia"
+    headers = {"apikey": "431d1dcb9c848bcdc5d4c98fe2f5d10c48bd50ff3b1b4edfb2c557592dcc75fd"}
+    payload = {"number": numero, "text": texto}
+    req.post(url, json=payload, headers=headers)
+
+    return "", 200
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     debug = os.environ.get("FLASK_ENV") == "development"
