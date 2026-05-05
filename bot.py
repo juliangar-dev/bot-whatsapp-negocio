@@ -107,6 +107,10 @@ conversaciones: dict[str, list] = {}
 
 MAX_HISTORIAL = 20  # Máximo de turnos por conversación
 
+EVO_URL = "https://evolution-api-production-47ce.up.railway.app"
+EVO_KEY = "431d1dcb9c848bcdc5d4c98fe2f5d10c48bd50ff3b1b4edfb2c557592dcc75fd"
+EVO_HEADERS = {"apikey": EVO_KEY}
+
 # ─────────────────────────────────────────
 # Helpers
 # ─────────────────────────────────────────
@@ -262,9 +266,6 @@ def crear_negocio():
 
     # Crear instancia en Evolution API automáticamente
     try:
-        EVO_URL = "https://evolution-api-production-47ce.up.railway.app"
-        EVO_KEY = "431d1dcb9c848bcdc5d4c98fe2f5d10c48bd50ff3b1b4edfb2c557592dcc75fd"
-        EVO_HEADERS = {"apikey": EVO_KEY}
 
         requests.post(
             f"{EVO_URL}/instance/create",
@@ -475,7 +476,7 @@ def obtener_qr(negocio_id):
         # Verificar estado de la instancia
         res = requests.get(
             f"https://evolution-api-production-47ce.up.railway.app/instance/connectionState/{negocio_id}",
-            headers={"apikey": "431d1dcb9c848bcdc5d4c98fe2f5d10c48bd50ff3b1b4edfb2c557592dcc75fd"},
+            headers=EVO_HEADERS,
             timeout=10
         )
         data = res.json()
@@ -487,7 +488,7 @@ def obtener_qr(negocio_id):
         # Pedir QR
         res_qr = requests.get(
             f"https://evolution-api-production-47ce.up.railway.app/instance/connect/{negocio_id}",
-            headers={"apikey": "431d1dcb9c848bcdc5d4c98fe2f5d10c48bd50ff3b1b4edfb2c557592dcc75fd"},
+            headers=EVO_HEADERS,
             timeout=10
         )
         qr_data = res_qr.json()
@@ -534,14 +535,16 @@ def evolution_webhook():
     
     numero = mensaje_data.get("key", {}).get("remoteJid", "")
     mensaje = mensaje_data.get("message", {}).get("conversation", "")
+    instance = datos.get("instance", "")
     
+    if not numero or not mensaje or not instance:
+        return "", 200
+
     # Verificar si el bot está pausado para esta conversación
     clave_pausa = f"{instance}:{numero}"
     if clave_pausa in pausas and datetime.utcnow().timestamp() < pausas[clave_pausa]:
         return "", 200
 
-    # Buscar negocio por número de WhatsApp
-    instance = datos.get("instance", "")
     negocio = db.session.get(Negocio, instance)
     
     if not negocio or not negocio.activo:
@@ -570,7 +573,7 @@ def evolution_webhook():
     requests.post(
         f"https://evolution-api-production-47ce.up.railway.app/message/sendText/{negocio.id}",
         json={"number": numero, "text": texto},
-        headers={"apikey": "431d1dcb9c848bcdc5d4c98fe2f5d10c48bd50ff3b1b4edfb2c557592dcc75fd"},
+        headers=EVO_HEADERS,
         timeout=10
     )
 
@@ -578,6 +581,8 @@ def evolution_webhook():
 
 @app.route("/migrar-db")
 def migrar_db():
+    if request.args.get("key") != os.environ.get("ADMIN_KEY", ""):
+        return error_json("No autorizado.", 403)
     try:
         with db.engine.connect() as conn:
             conn.execute(db.text("ALTER TABLE negocios ADD COLUMN estilo TEXT"))
