@@ -67,6 +67,7 @@ class Negocio(db.Model):
     info_adicional = db.Column(db.Text,       nullable=True)
     contacto     = db.Column(db.String(100),  nullable=True)
     estilo       = db.Column(db.Text,         nullable=True)
+    tiempo_pausa = db.Column(db.Integer,      default=1800)
     activo       = db.Column(db.Boolean,      default=True)
     creado_en    = db.Column(db.DateTime,     default=datetime.utcnow)
     actualizado_en = db.Column(db.DateTime,   default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -84,6 +85,7 @@ class Negocio(db.Model):
             "info_adicional": self.info_adicional,
             "contacto":       self.contacto,
             "estilo":         self.estilo,
+            "tiempo_pausa":   self.tiempo_pausa,
         }
 
     def __repr__(self):
@@ -100,6 +102,7 @@ with app.app_context():
 
 # Historial de conversaciones por (negocio_id, numero_telefono)
 # Formato: { "negocio_id:numero": [{"role": ..., "content": ...}] }
+pausas: dict[str, float] = {}
 conversaciones: dict[str, list] = {}
 
 MAX_HISTORIAL = 20  # Máximo de turnos por conversación
@@ -339,6 +342,7 @@ def guardar_negocio():
     negocio.servicios      = json.dumps(datos.get("servicios", []), ensure_ascii=False)
     negocio.info_adicional = datos.get("info_adicional", "")
     negocio.estilo         = datos.get("estilo", "")
+    negocio.tiempo_pausa   = datos.get("tiempo_pausa", 1800)
     negocio.contacto       = datos.get("contacto", "")
     negocio.actualizado_en = datetime.utcnow()
 
@@ -517,14 +521,23 @@ def evolution_webhook():
     
     mensaje_data = datos.get("data", {})
     
-    # Ignorar mensajes propios
+    # Si el dueño respondió manualmente, pausar el bot para esa conversación
     if mensaje_data.get("key", {}).get("fromMe"):
+        numero_pausa = mensaje_data.get("key", {}).get("remoteJid", "")
+        instance_pausa = datos.get("instance", "")
+        if numero_pausa and instance_pausa:
+            negocio_pausa = db.session.get(Negocio, instance_pausa)
+            tiempo = negocio_pausa.tiempo_pausa if negocio_pausa else 1800
+            clave_pausa = f"{instance_pausa}:{numero_pausa}"
+            pausas[clave_pausa] = datetime.utcnow().timestamp() + tiempo
         return "", 200
     
     numero = mensaje_data.get("key", {}).get("remoteJid", "")
     mensaje = mensaje_data.get("message", {}).get("conversation", "")
     
-    if not numero or not mensaje:
+    # Verificar si el bot está pausado para esta conversación
+    clave_pausa = f"{instance}:{numero}"
+    if clave_pausa in pausas and datetime.utcnow().timestamp() < pausas[clave_pausa]:
         return "", 200
 
     # Buscar negocio por número de WhatsApp
@@ -568,6 +581,7 @@ def migrar_db():
     try:
         with db.engine.connect() as conn:
             conn.execute(db.text("ALTER TABLE negocios ADD COLUMN estilo TEXT"))
+            conn.execute(db.text("ALTER TABLE negocios ADD COLUMN tiempo_pausa INTEGER DEFAULT 1800"))
             conn.commit()
         return jsonify({"mensaje": "Migración exitosa"})
     except Exception as e:

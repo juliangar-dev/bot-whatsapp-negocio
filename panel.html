@@ -418,6 +418,27 @@
             </div>
         </div>
 
+        <!-- Card 3: Pausa -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Pausa del bot</span>
+            </div>
+            <div class="card-body">
+                <div class="field">
+                    <label>Tiempo de pausa cuando respondés manualmente</label>
+                    <select id="tiempo_pausa" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text-1);font-family:var(--font);font-size:14px;padding:10px 14px;outline:none;">
+                        <option value="300">5 minutos</option>
+                        <option value="900">15 minutos</option>
+                        <option value="1800" selected>30 minutos</option>
+                        <option value="3600">1 hora</option>
+                        <option value="14400">4 horas</option>
+                        <option value="86400">24 horas</option>
+                    </select>
+                    <p class="field-hint">Cuando respondés un mensaje manualmente, el bot se pausa por este tiempo para esa conversación.</p>
+                </div>
+            </div>
+        </div>
+
         <!-- Card 3: Estilo -->
         <div class="card">
             <div class="card-header">
@@ -565,6 +586,7 @@
         document.getElementById("contacto").value      = datos.contacto      || "";
         document.getElementById("info_adicional").value = datos.info_adicional || "";
         document.getElementById("estilo").value = datos.estilo || "";
+        document.getElementById("tiempo_pausa").value = datos.tiempo_pausa || 1800;
 
         if (datos.servicios) {
             try {
@@ -617,6 +639,7 @@
             servicios,
             info_adicional: document.getElementById("info_adicional").value.trim(),
             estilo: document.getElementById("estilo").value.trim(),
+            tiempo_pausa: parseInt(document.getElementById("tiempo_pausa").value),
         };
 
         try {
