@@ -585,7 +585,6 @@ def migrar_db():
         return error_json("No autorizado.", 403)
     try:
         with db.engine.connect() as conn:
-            conn.execute(db.text("ALTER TABLE negocios ADD COLUMN estilo TEXT"))
             conn.execute(db.text("ALTER TABLE negocios ADD COLUMN tiempo_pausa INTEGER DEFAULT 1800"))
             conn.commit()
         return jsonify({"mensaje": "Migración exitosa"})
