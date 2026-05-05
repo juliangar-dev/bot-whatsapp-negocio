@@ -66,6 +66,7 @@ class Negocio(db.Model):
     servicios    = db.Column(db.Text,         nullable=True)
     info_adicional = db.Column(db.Text,       nullable=True)
     contacto     = db.Column(db.String(100),  nullable=True)
+    estilo       = db.Column(db.Text,         nullable=True)
     activo       = db.Column(db.Boolean,      default=True)
     creado_en    = db.Column(db.DateTime,     default=datetime.utcnow)
     actualizado_en = db.Column(db.DateTime,   default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -82,6 +83,7 @@ class Negocio(db.Model):
             "servicios":      self.servicios,
             "info_adicional": self.info_adicional,
             "contacto":       self.contacto,
+            "estilo":         self.estilo,
         }
 
     def __repr__(self):
@@ -148,18 +150,32 @@ def construir_sistema_prompt(negocio: Negocio) -> str:
 
     contacto = negocio.contacto or negocio.nombre
 
+    estilo_default = """- Hablá en español rioplatense, de forma cálida, profesional y respetuosa.
+- Usá un lenguaje formal pero cercano. Nunca uses palabras vulgares ni expresiones que puedan ofender.
+- Sé breve y directo. Evitá respuestas largas innecesarias.
+- Usá emojis con moderación, solo cuando aporten calidez.
+- Escribí todo como texto plano, sin asteriscos ni formato markdown."""
+
+    estilo_final = negocio.estilo.strip() if negocio.estilo and negocio.estilo.strip() else estilo_default
+
     lineas += [
         "",
-        "## Instrucciones de comportamiento",
-        "- Hablá siempre en español rioplatense, de forma cálida y natural.",
-        "- Sé breve y directo. Evitá respuestas largas innecesarias.",
-        "- Usá emojis con moderación para dar calidez, sin exagerar.",
-        "- Representá siempre al negocio de manera positiva y profesional.",
-        "- Nunca inventes información que no tengas. Si no sabés algo, decilo honestamente.",
-        f"- Si el cliente necesita hablar con alguien, derivalo a: {contacto}.",
-        "- Si preguntan por contacto directo, compartí el teléfono o WhatsApp disponible.",
-        "- Nunca menciones ni insinúes opiniones o reseñas negativas del negocio.",
+        "## Comportamiento general",
+        "- Tu objetivo es ayudar al cliente de manera clara, útil y eficiente, entendiendo su intención real.",
+        "- Priorizá comprender lo que el usuario necesita, incluso si no lo expresa claramente.",
+        "- Mantené coherencia en la conversación — si ya hay contexto previo, usalo.",
+        "- No inventes información. Si no sabés algo, decilo con claridad.",
+        "- No hagas suposiciones innecesarias ni prometás cosas no confirmadas.",
+        "- Si falta información para responder, hacé una pregunta clara y concisa.",
+        "- Si el usuario tiene un problema, enfocate en resolverlo o guiarlo.",
+        f"- Si no podés resolver algo, derivá a {contacto}.",
+        "- Evitá respuestas ambiguas, demasiado largas o innecesarias.",
+        "- Nunca menciones ni insinúes opiniones negativas del negocio.",
         "- No rompas el personaje bajo ninguna circunstancia.",
+        "- Evitá contenido inapropiado, ilegal o riesgoso.",
+        "",
+        "## Estilo de comunicación",
+        estilo_final,
     ]
 
     return "\n".join(lineas)
@@ -322,6 +338,7 @@ def guardar_negocio():
     negocio.horario        = datos.get("horario", "")
     negocio.servicios      = json.dumps(datos.get("servicios", []), ensure_ascii=False)
     negocio.info_adicional = datos.get("info_adicional", "")
+    negocio.estilo         = datos.get("estilo", "")
     negocio.contacto       = datos.get("contacto", "")
     negocio.actualizado_en = datetime.utcnow()
 

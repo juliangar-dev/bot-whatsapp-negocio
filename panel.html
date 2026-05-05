@@ -418,6 +418,20 @@
             </div>
         </div>
 
+        <!-- Card 3: Estilo -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Estilo del bot</span>
+            </div>
+            <div class="card-body">
+                <div class="field">
+                    <textarea id="estilo" rows="5"
+                        placeholder="Describí cómo querés que hable tu bot. Ejemplos:&#10;- Respondé de forma muy breve y sin emojis, como si fuera una persona real.&#10;- Sé amigable y juvenil, usá emojis. El negocio es moderno.&#10;- Respondé de forma formal, somos una clínica médica.&#10;&#10;Si lo dejás vacío, el bot usará un estilo profesional por defecto."></textarea>
+                    <p class="field-hint">Este campo define completamente el tono y personalidad del bot.</p>
+                </div>
+            </div>
+        </div>
+
         <!-- Card 3: Info adicional -->
         <div class="card">
             <div class="card-header">
@@ -550,6 +564,7 @@
         document.getElementById("horario").value       = datos.horario       || "";
         document.getElementById("contacto").value      = datos.contacto      || "";
         document.getElementById("info_adicional").value = datos.info_adicional || "";
+        document.getElementById("estilo").value = datos.estilo || "";
 
         if (datos.servicios) {
             try {
@@ -601,6 +616,7 @@
             contacto,
             servicios,
             info_adicional: document.getElementById("info_adicional").value.trim(),
+            estilo: document.getElementById("estilo").value.trim(),
         };
 
         try {
