@@ -563,6 +563,16 @@ def evolution_webhook():
 
     return "", 200
 
+@app.route("/migrar-db")
+def migrar_db():
+    try:
+        with db.engine.connect() as conn:
+            conn.execute(db.text("ALTER TABLE negocios ADD COLUMN estilo TEXT"))
+            conn.commit()
+        return jsonify({"mensaje": "Migración exitosa"})
+    except Exception as e:
+        return jsonify({"error": str(e)})
+    
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     debug = os.environ.get("FLASK_ENV") == "development"
