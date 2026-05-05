@@ -524,9 +524,11 @@ def evolution_webhook():
     
     # Si el dueño respondió manualmente, pausar el bot para esa conversación
     if mensaje_data.get("key", {}).get("fromMe"):
+        mensaje_propio = mensaje_data.get("message", {}).get("conversation", "")
         numero_pausa = mensaje_data.get("key", {}).get("remoteJid", "")
         instance_pausa = datos.get("instance", "")
-        if numero_pausa and instance_pausa:
+        # Solo pausar si hay un mensaje de texto real (no eventos del sistema)
+        if mensaje_propio and numero_pausa and instance_pausa:
             negocio_pausa = db.session.get(Negocio, instance_pausa)
             tiempo = negocio_pausa.tiempo_pausa if negocio_pausa else 1800
             clave_pausa = f"{instance_pausa}:{numero_pausa}"
