@@ -68,6 +68,9 @@ class Negocio(db.Model):
     contacto     = db.Column(db.String(100),  nullable=True)
     estilo       = db.Column(db.Text,         nullable=True)
     tiempo_pausa = db.Column(db.Integer,      default=1800)
+    limite_mensajes  = db.Column(db.Integer,  default=3000)
+    mensajes_usados  = db.Column(db.Integer,  default=0)
+    mes_actual       = db.Column(db.String(7), default="")
     activo       = db.Column(db.Boolean,      default=True)
     creado_en    = db.Column(db.DateTime,     default=datetime.utcnow)
     actualizado_en = db.Column(db.DateTime,   default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -86,6 +89,8 @@ class Negocio(db.Model):
             "contacto":       self.contacto,
             "estilo":         self.estilo,
             "tiempo_pausa":   self.tiempo_pausa,
+            "limite_mensajes": self.limite_mensajes,
+            "mensajes_usados": self.mensajes_usados,
         }
 
     def __repr__(self):
@@ -541,6 +546,14 @@ def evolution_webhook():
     
     if not numero or not mensaje or not instance:
         return "", 200
+    
+    # Detectar despedida y limpiar historial
+    despedidas = ["chau", "bye", "hasta luego", "adiós", "adios", "nos vemos", "gracias, chau", "gracias chau"]
+    if any(d in mensaje.lower() for d in despedidas):
+        clave = f"{instance}:{numero}"
+        if clave in conversaciones:
+            del conversaciones[clave]
+        return "", 200
 
     # Verificar si el bot está pausado para esta conversación
     clave_pausa = f"{instance}:{numero}"
@@ -551,6 +564,33 @@ def evolution_webhook():
     
     if not negocio or not negocio.activo:
         return "", 200
+
+    # Verificar y resetear contador mensual
+    mes_hoy = datetime.utcnow().strftime("%Y-%m")
+    if negocio.mes_actual != mes_hoy:
+        negocio.mes_actual = mes_hoy
+        negocio.mensajes_usados = 0
+        db.session.commit()
+
+    # Verificar límite de mensajes
+    if negocio.mensajes_usados >= negocio.limite_mensajes:
+        requests.post(
+            f"{EVO_URL}/message/sendText/{negocio.id}",
+            json={"number": numero, "text": "Lo sentimos, el negocio ha alcanzado su límite de mensajes por este mes. Por favor contactanos directamente."},
+            headers=EVO_HEADERS,
+            timeout=10
+        )
+        return "", 200
+
+    # Anti-spam: máximo 10 mensajes por chat por hora
+    clave_spam = f"spam:{negocio.id}:{numero}"
+    if clave_spam not in conversaciones:
+        conversaciones[clave_spam] = []
+    ahora = datetime.utcnow().timestamp()
+    conversaciones[clave_spam] = [t for t in conversaciones[clave_spam] if ahora - t < 3600]
+    if len(conversaciones[clave_spam]) >= 10:
+        return "", 200
+    conversaciones[clave_spam].append(ahora)
 
     clave = f"{negocio.id}:{numero}"
     historial = obtener_historial(clave)
@@ -570,6 +610,10 @@ def evolution_webhook():
         return "", 200
 
     historial.append({"role": "assistant", "content": texto})
+    
+    # Incrementar contador de mensajes
+    negocio.mensajes_usados += 1
+    db.session.commit()
 
     # Enviar respuesta via Evolution API
     requests.post(
@@ -587,7 +631,9 @@ def migrar_db():
         return error_json("No autorizado.", 403)
     try:
         with db.engine.connect() as conn:
-            conn.execute(db.text("ALTER TABLE negocios ADD COLUMN tiempo_pausa INTEGER DEFAULT 1800"))
+            conn.execute(db.text("ALTER TABLE negocios ADD COLUMN limite_mensajes INTEGER DEFAULT 3000"))
+            conn.execute(db.text("ALTER TABLE negocios ADD COLUMN mensajes_usados INTEGER DEFAULT 0"))
+            conn.execute(db.text("ALTER TABLE negocios ADD COLUMN mes_actual VARCHAR(7) DEFAULT ''"))
             conn.commit()
         return jsonify({"mensaje": "Migración exitosa"})
     except Exception as e:
