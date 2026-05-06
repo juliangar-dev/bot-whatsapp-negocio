@@ -532,8 +532,8 @@ def evolution_webhook():
         mensaje_propio = mensaje_data.get("message", {}).get("conversation", "")
         numero_pausa = mensaje_data.get("key", {}).get("remoteJid", "")
         instance_pausa = datos.get("instance", "")
-        # Solo pausar si hay un mensaje de texto real (no eventos del sistema)
-        if mensaje_propio and numero_pausa and instance_pausa:
+        es_api = datos.get("apikey") or mensaje_data.get("key", {}).get("id", "").startswith("BAE")
+        if mensaje_propio and numero_pausa and instance_pausa and not es_api:
             negocio_pausa = db.session.get(Negocio, instance_pausa)
             tiempo = negocio_pausa.tiempo_pausa if negocio_pausa else 1800
             clave_pausa = f"{instance_pausa}:{numero_pausa}"
