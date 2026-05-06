@@ -248,7 +248,14 @@ def crear_negocio():
     if not password or len(password) < 4:
         return error_json("La contraseña debe tener al menos 4 caracteres.", 400)
 
-    negocio_id = str(uuid.uuid4())[:8]
+    # Generar ID basado en el nombre del negocio
+    import re
+    base_id = re.sub(r'[^a-z0-9]+', '-', nombre.lower().strip()).strip('-')[:30]
+    negocio_id = base_id
+    contador = 2
+    while db.session.get(Negocio, negocio_id):
+        negocio_id = f"{base_id}-{contador}"
+        contador += 1
 
     negocio = Negocio(
         id             = negocio_id,
