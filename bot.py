@@ -55,7 +55,7 @@ MP_PUBLIC_KEY = os.environ.get("MP_PUBLIC_KEY")
 class Negocio(db.Model):
     __tablename__ = "negocios"
 
-    id           = db.Column(db.String(8),   primary_key=True)
+    id           = db.Column(db.String(50),  primary_key=True)
     password     = db.Column(db.String(255),  nullable=False)
     nombre       = db.Column(db.String(200),  nullable=False)
     ubicacion    = db.Column(db.String(300),  nullable=True)
@@ -250,7 +250,10 @@ def crear_negocio():
 
     # Generar ID basado en el nombre del negocio
     import re
-    base_id = re.sub(r'[^a-z0-9]+', '-', nombre.lower().strip()).strip('-')[:30]
+    import unicodedata
+    nombre_normalizado = unicodedata.normalize('NFKD', nombre).encode('ascii', 'ignore').decode('ascii')
+    base_id = re.sub(r'[^a-z0-9]+', '-', nombre_normalizado.lower().strip()).strip('-')[:30]
+    
     negocio_id = base_id
     contador = 2
     while db.session.get(Negocio, negocio_id):
