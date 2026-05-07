@@ -123,9 +123,17 @@ EVO_HEADERS = {"apikey": EVO_KEY}
 def construir_sistema_prompt(negocio: Negocio) -> str:
     """Construye el system prompt del bot a partir de los datos del negocio."""
     
+    from datetime import datetime, timezone, timedelta
+    tz_arg = timezone(timedelta(hours=-3))
+    ahora = datetime.now(tz_arg)
+    dias = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"]
+    dia_actual = dias[ahora.weekday()]
+    hora_actual = ahora.strftime("%H:%M")
+    
     lineas = [
         f"Sos el asistente virtual oficial de '{negocio.nombre}'.",
         f"Tu único objetivo es responder consultas de clientes de manera útil, amable y precisa.",
+        f"Hoy es {dia_actual} y son las {hora_actual} (hora de Argentina).",
         "",
         "## Información del negocio",
     ]
