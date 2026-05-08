@@ -606,7 +606,7 @@ def evolution_webhook():
         conversaciones[clave_spam] = []
     ahora = datetime.utcnow().timestamp()
     conversaciones[clave_spam] = [t for t in conversaciones[clave_spam] if ahora - t < 3600]
-    if len(conversaciones[clave_spam]) >= 10:
+    if len(conversaciones[clave_spam]) >= 50:
         return "", 200
     conversaciones[clave_spam].append(ahora)
 
