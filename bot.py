@@ -546,7 +546,10 @@ def estadisticas(negocio_id):
         return error_json("Contraseña incorrecta.", 403)
     
     # Mensajes del mes actual
-    mes_hoy = datetime.utcnow().strftime("%Y-%m")
+    from datetime import timezone, timedelta
+    tz_arg = timezone(timedelta(hours=-3))
+    ahora_arg = datetime.now(tz_arg)
+    mes_hoy = ahora_arg.strftime("%Y-%m")
     mensajes_mes = Mensaje.query.filter(
         Mensaje.negocio_id == negocio_id,
         Mensaje.rol == "bot",
