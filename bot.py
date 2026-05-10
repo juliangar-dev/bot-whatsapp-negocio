@@ -95,7 +95,16 @@ class Negocio(db.Model):
 
     def __repr__(self):
         return f"<Negocio {self.id} - {self.nombre}>"
+    
+class Mensaje(db.Model):
+    __tablename__ = "mensajes"
 
+    id          = db.Column(db.Integer,      primary_key=True, autoincrement=True)
+    negocio_id  = db.Column(db.String(50),   nullable=False)
+    numero      = db.Column(db.String(50),   nullable=False)
+    rol         = db.Column(db.String(10),   nullable=False)
+    contenido   = db.Column(db.Text,         nullable=False)
+    creado_en   = db.Column(db.DateTime,     default=datetime.utcnow)
 
 with app.app_context():
     db.create_all()
@@ -526,6 +535,53 @@ def obtener_qr(negocio_id):
         logger.error(f"Error obteniendo QR: {e}")
         return error_json("Error conectando con Evolution API.", 500)
 
+@app.route("/estadisticas/<negocio_id>")
+def estadisticas(negocio_id):
+    password = request.args.get("password", "")
+    negocio = db.session.get(Negocio, negocio_id)
+    
+    if not negocio or not negocio.activo:
+        return error_json("Negocio no encontrado.", 404)
+    if not validar_password(negocio, password):
+        return error_json("Contraseña incorrecta.", 403)
+    
+    # Mensajes del mes actual
+    mes_hoy = datetime.utcnow().strftime("%Y-%m")
+    mensajes_mes = Mensaje.query.filter(
+        Mensaje.negocio_id == negocio_id,
+        Mensaje.rol == "bot",
+        db.func.to_char(Mensaje.creado_en, 'YYYY-MM') == mes_hoy
+    ).count()
+    
+    # Mensajes por día de la semana
+    dias_nombres = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
+    por_dia = {}
+    for i, dia in enumerate(dias_nombres):
+        count = Mensaje.query.filter(
+            Mensaje.negocio_id == negocio_id,
+            Mensaje.rol == "bot",
+            db.func.extract('dow', Mensaje.creado_en) == (i + 1) % 7
+        ).count()
+        por_dia[dia] = count
+    
+    # Hora pico
+    por_hora = {}
+    for h in range(24):
+        count = Mensaje.query.filter(
+            Mensaje.negocio_id == negocio_id,
+            Mensaje.rol == "bot",
+            db.func.extract('hour', Mensaje.creado_en) == h
+        ).count()
+        if count > 0:
+            por_hora[f"{h:02d}:00"] = count
+    
+    return jsonify({
+        "mensajes_mes": mensajes_mes,
+        "por_dia": por_dia,
+        "por_hora": por_hora,
+        "total": negocio.mensajes_usados
+    })
+
 @app.route("/health")
 def health():
     return jsonify({"status": "ok", "timestamp": datetime.utcnow().isoformat()})
@@ -628,6 +684,10 @@ def evolution_webhook():
         return "", 200
 
     historial.append({"role": "assistant", "content": texto})
+    
+    # Guardar mensajes en la base de datos
+    db.session.add(Mensaje(negocio_id=negocio.id, numero=numero, rol="user", contenido=mensaje))
+    db.session.add(Mensaje(negocio_id=negocio.id, numero=numero, rol="bot", contenido=texto))
     
     # Incrementar contador de mensajes
     negocio.mensajes_usados += 1
