@@ -585,6 +585,11 @@
                         </div>
                     </div>
                     <div class="field">
+                        <div class="field-label">Link para turnos <span class="opt">(opcional)</span></div>
+                        <input type="text" id="turnos" placeholder="Ej: calendly.com/minegocio, wa.me/549...">
+                        <p class="field-hint">Cuando alguien pregunte por turno, el bot los manda directo acá.</p>
+                    </div>
+                    <div class="field">
                         <div class="field-label">Nombre del responsable <span class="req">*</span></div>
                         <input type="text" id="contacto" placeholder="Nombre de quien atiende" oninput="validarCampo(this)">
                         <p class="field-hint">El bot derivará consultas complejas a esta persona.</p>
@@ -725,7 +730,7 @@ async function crear(){
     btn.disabled=true;btn.textContent="Activando tu bot...";
     const serviciosRaw=document.getElementById("servicios").value.trim();
     const servicios=serviciosRaw?[{nombre:serviciosRaw,precio:null}]:[];
-    const datos={nombre,contacto,password,ubicacion:document.getElementById("ubicacion").value.trim(),telefono:document.getElementById("telefono").value.trim(),whatsapp:document.getElementById("whatsapp").value.trim(),sitio_web:document.getElementById("sitio_web").value.trim(),horario:document.getElementById("horario").value.trim(),servicios,info_adicional:document.getElementById("info_adicional").value.trim()};
+    const datos={nombre,contacto,password,ubicacion:document.getElementById("ubicacion").value.trim(),telefono:document.getElementById("telefono").value.trim(),whatsapp:document.getElementById("whatsapp").value.trim(),sitio_web:document.getElementById("sitio_web").value.trim(),horario:document.getElementById("horario").value.trim(),turnos:document.getElementById("turnos").value.trim(),servicios,info_adicional:document.getElementById("info_adicional").value.trim()};
     try{
         const res=await fetch("/crear",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(datos)});
         const result=await res.json();

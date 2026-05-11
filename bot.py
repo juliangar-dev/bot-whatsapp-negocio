@@ -67,6 +67,7 @@ class Negocio(db.Model):
     info_adicional = db.Column(db.Text,       nullable=True)
     contacto     = db.Column(db.String(100),  nullable=True)
     estilo       = db.Column(db.Text,         nullable=True)
+    turnos       = db.Column(db.String(500),  nullable=True)
     tiempo_pausa = db.Column(db.Integer,      default=1800)
     limite_mensajes  = db.Column(db.Integer,  default=3000)
     mensajes_usados  = db.Column(db.Integer,  default=0)
@@ -87,6 +88,7 @@ class Negocio(db.Model):
             "servicios":      self.servicios,
             "info_adicional": self.info_adicional,
             "contacto":       self.contacto,
+            "turnos":         self.turnos,
             "estilo":         self.estilo,
             "tiempo_pausa":   self.tiempo_pausa,
             "limite_mensajes": self.limite_mensajes,
@@ -157,6 +159,8 @@ def construir_sistema_prompt(negocio: Negocio) -> str:
         lineas.append(f"- **WhatsApp:** {negocio.whatsapp}")
     if negocio.sitio_web:
         lineas.append(f"- **Sitio web:** {negocio.sitio_web}")
+    if negocio.turnos:
+        lineas.append(f"- **Turnos:** {negocio.turnos}")
 
     if negocio.servicios:
         try:
@@ -289,6 +293,7 @@ def crear_negocio():
         servicios      = json.dumps(datos.get("servicios", []), ensure_ascii=False),
         info_adicional = datos.get("info_adicional", ""),
         contacto       = datos.get("contacto", ""),
+        turnos         = datos.get("turnos", ""),
     )
 
     db.session.add(negocio)
@@ -377,6 +382,7 @@ def guardar_negocio():
     negocio.estilo         = datos.get("estilo", "")
     negocio.tiempo_pausa   = datos.get("tiempo_pausa", 1800)
     negocio.contacto       = datos.get("contacto", "")
+    negocio.turnos         = datos.get("turnos", "")
     negocio.actualizado_en = datetime.utcnow()
 
     db.session.commit()

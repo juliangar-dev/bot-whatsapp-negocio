@@ -398,6 +398,11 @@
                     <input type="text" id="horario" placeholder="Ej: Lunes a sábado de 9 a 20hs">
                 </div>
                 <div class="field">
+                    <div class="field-label">Link para turnos <span class="opt">(opcional)</span></div>
+                    <input type="text" id="turnos" placeholder="Ej: calendly.com/minegocio, wa.me/549...">
+                    <p class="field-hint">Cuando alguien pregunte por turno, el bot los manda directo acá.</p>
+                </div>
+                <div class="field">
                     <label>Responsable del negocio <span class="req">*</span></label>
                     <input type="text" id="contacto" placeholder="Ej: Carlos">
                     <p class="field-hint">El bot derivará consultas complejas a esta persona.</p>
@@ -611,6 +616,7 @@
         document.getElementById("sitio_web").value     = datos.sitio_web     || "";
         document.getElementById("horario").value       = datos.horario       || "";
         document.getElementById("contacto").value      = datos.contacto      || "";
+        document.getElementById("turnos").value        = datos.turnos        || "";
         document.getElementById("info_adicional").value = datos.info_adicional || "";
         document.getElementById("estilo").value = datos.estilo || "";
         document.getElementById("tiempo_pausa").value = datos.tiempo_pausa || 1800;
@@ -663,6 +669,7 @@
             sitio_web:     document.getElementById("sitio_web").value.trim(),
             horario:       document.getElementById("horario").value.trim(),
             contacto,
+            turnos:        document.getElementById("turnos").value.trim(),
             servicios,
             info_adicional: document.getElementById("info_adicional").value.trim(),
             estilo: document.getElementById("estilo").value.trim(),
