@@ -718,9 +718,10 @@ def migrar_db():
         return error_json("No autorizado.", 403)
     try:
         with db.engine.connect() as conn:
-            conn.execute(db.text("ALTER TABLE negocios ADD COLUMN limite_mensajes INTEGER DEFAULT 3000"))
-            conn.execute(db.text("ALTER TABLE negocios ADD COLUMN mensajes_usados INTEGER DEFAULT 0"))
-            conn.execute(db.text("ALTER TABLE negocios ADD COLUMN mes_actual VARCHAR(7) DEFAULT ''"))
+            conn.execute(db.text("ALTER TABLE negocios ADD COLUMN IF NOT EXISTS limite_mensajes INTEGER DEFAULT 3000"))
+            conn.execute(db.text("ALTER TABLE negocios ADD COLUMN IF NOT EXISTS mensajes_usados INTEGER DEFAULT 0"))
+            conn.execute(db.text("ALTER TABLE negocios ADD COLUMN IF NOT EXISTS mes_actual VARCHAR(7) DEFAULT ''"))
+            conn.execute(db.text("ALTER TABLE negocios ADD COLUMN IF NOT EXISTS turnos VARCHAR(500)"))
             conn.commit()
         return jsonify({"mensaje": "Migración exitosa"})
     except Exception as e:
