@@ -123,8 +123,8 @@ conversaciones: dict[str, list] = {}
 
 MAX_HISTORIAL = 20  # Máximo de turnos por conversación
 
-EVO_URL = "https://evolution-api-production-47ce.up.railway.app"
-EVO_KEY = "431d1dcb9c848bcdc5d4c98fe2f5d10c48bd50ff3b1b4edfb2c557592dcc75fd"
+EVO_URL = os.environ.get("EVO_URL", "https://evolution-api-production-47ce.up.railway.app")
+EVO_KEY = os.environ.get("EVO_KEY", "")
 EVO_HEADERS = {"apikey": EVO_KEY}
 
 # ─────────────────────────────────────────
